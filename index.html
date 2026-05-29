@@ -1,0 +1,2017 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="tavern">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Adventurer's Codex</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── THEMES ── */
+:root, html[data-theme="tavern"] {
+  --bg:#1a1208; --bg2:#221a0e; --bg3:#2d2215;
+  --card:#2a1e10; --card2:#332615; --border:#4a3520;
+  --text:#e8d5b0; --muted:#9a8060;
+  --accent:#c8820a; --accent2:#e89a1a;
+  --danger:#c0392b; --success:#27ae60; --warn:#e67e22;
+  --hp:#e74c3c; --gold:#f1c40f; --sp:#3498db;
+}
+html[data-theme="arcane"] {
+  --bg:#0d0d1a; --bg2:#12122a; --bg3:#181830;
+  --card:#14143a; --card2:#1c1c45; --border:#2a2a6a;
+  --text:#c8d4f0; --muted:#6a72a0;
+  --accent:#7c4dff; --accent2:#a37aff;
+  --danger:#e53935; --success:#43a047; --warn:#fb8c00;
+}
+html[data-theme="blood"] {
+  --bg:#0e0808; --bg2:#180c0c; --bg3:#221010;
+  --card:#1a0e0e; --card2:#241414; --border:#4a1515;
+  --text:#e8c8c8; --muted:#906060;
+  --accent:#c01c1c; --accent2:#e03030;
+  --danger:#ff1744; --success:#69f0ae; --warn:#ffd740;
+}
+html[data-theme="frost"] {
+  --bg:#080e14; --bg2:#0c1420; --bg3:#101c2c;
+  --card:#0e1828; --card2:#141f33; --border:#1e3a5a;
+  --text:#c8dff0; --muted:#5a7a9a;
+  --accent:#00b4d8; --accent2:#48cae4;
+  --danger:#ef5350; --success:#66bb6a; --warn:#ffa726;
+}
+html[data-theme="forest"] {
+  --bg:#080e08; --bg2:#0e1a0e; --bg3:#122012;
+  --card:#101e10; --card2:#162816; --border:#1e4a1e;
+  --text:#c8e0c0; --muted:#5a8050;
+  --accent:#4caf50; --accent2:#66bb6a;
+  --danger:#ef5350; --success:#4caf50; --warn:#ffa726;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text)}
+body{display:flex;flex-direction:column}
+button{cursor:pointer;font-family:'Inter',sans-serif;color:inherit}
+input,select,textarea{font-family:'Inter',sans-serif;color:inherit}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* ── TOP BAR ── */
+.topbar{
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  padding:10px 14px env(safe-area-inset-top, 10px);
+  padding-top:max(10px, env(safe-area-inset-top));
+  display:flex;align-items:center;gap:10px;flex-shrink:0;
+}
+.brand{
+  font-family:'Cinzel',serif;font-size:18px;font-weight:700;
+  color:var(--accent);flex:1;letter-spacing:.5px;
+}
+.brand-sub{color:var(--muted);font-size:11px;font-weight:400;letter-spacing:1px;text-transform:uppercase}
+.theme-btn{
+  background:var(--bg3);border:1px solid var(--border);border-radius:10px;
+  padding:8px 10px;font-size:14px;color:var(--text);
+}
+
+/* ── SEARCH BAR ── */
+.search-wrap{
+  padding:12px 12px 8px;
+  background:var(--bg);
+  position:sticky;top:0;z-index:5;
+}
+.search{
+  width:100%;
+  background:var(--card);
+  border:1.5px solid var(--border);
+  border-radius:12px;
+  padding:12px 14px 12px 40px;
+  font-size:15px;color:var(--text);
+  outline:none;
+  transition:border-color .15s;
+}
+.search:focus{border-color:var(--accent)}
+.search::placeholder{color:var(--muted)}
+.search-icon{
+  position:absolute;left:24px;top:50%;transform:translateY(-50%);
+  color:var(--muted);font-size:16px;pointer-events:none;
+}
+.search-clear{
+  position:absolute;right:24px;top:50%;transform:translateY(-50%);
+  background:var(--bg3);border:none;border-radius:50%;
+  width:22px;height:22px;display:none;align-items:center;justify-content:center;
+  color:var(--muted);font-size:14px;
+}
+.search-clear.visible{display:flex}
+.search-row{position:relative}
+
+/* ── FILTER CHIPS ── */
+.chips{
+  display:flex;gap:6px;overflow-x:auto;padding:4px 12px 10px;
+  scrollbar-width:none;
+}
+.chips::-webkit-scrollbar{display:none}
+.chip{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:18px;padding:6px 12px;
+  font-size:12px;font-weight:600;color:var(--muted);
+  white-space:nowrap;flex-shrink:0;
+  transition:all .12s;
+}
+.chip.active{
+  background:var(--accent);border-color:var(--accent);color:#000;
+}
+
+/* ── CONTENT ── */
+.content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.pane{display:none;padding:0 12px 80px}
+.pane.active{display:block}
+
+/* ── RESULTS LIST ── */
+.results{display:flex;flex-direction:column;gap:8px;padding-top:4px}
+.result-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:12px 14px;
+  display:flex;align-items:center;gap:12px;
+  transition:transform .08s, background .15s;
+  text-align:left;width:100%;
+}
+.result-card:active{transform:scale(.985);background:var(--card2)}
+.result-icon{
+  width:36px;height:36px;border-radius:8px;
+  background:var(--bg3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0;
+}
+.result-main{flex:1;min-width:0}
+.result-name{font-family:'Cinzel',serif;font-weight:600;font-size:15px;color:var(--text);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.result-meta{font-size:11px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
+.result-fav{
+  background:transparent;border:none;font-size:18px;color:var(--muted);padding:4px;
+}
+.result-fav.on{color:var(--gold, var(--accent))}
+
+.empty{
+  text-align:center;color:var(--muted);padding:40px 20px;font-size:14px;
+}
+.empty-emoji{font-size:36px;margin-bottom:8px;opacity:.6}
+
+/* ── LOADING ── */
+.loading{
+  text-align:center;padding:40px 20px;color:var(--muted);
+}
+.spinner{
+  display:inline-block;width:24px;height:24px;
+  border:2.5px solid var(--border);
+  border-top-color:var(--accent);
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.progress-text{margin-top:10px;font-size:12px}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{
+  background:var(--bg2);border-top:1px solid var(--border);
+  display:flex;flex-shrink:0;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.nav-item{
+  flex:1;background:transparent;border:none;
+  padding:10px 4px;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  color:var(--muted);
+  border-top:2px solid transparent;
+  transition:color .15s, border-color .15s;
+}
+.nav-item.active{color:var(--accent);border-top-color:var(--accent)}
+.nav-icon{font-size:20px;line-height:1}
+.nav-label{font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+
+/* ── DETAIL OVERLAY ── */
+.detail{
+  position:fixed;inset:0;background:var(--bg);
+  display:none;flex-direction:column;z-index:100;
+}
+.detail.open{display:flex}
+.detail-bar{
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  padding:10px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0;
+  padding-top:max(10px, env(safe-area-inset-top));
+}
+.detail-back{
+  background:var(--bg3);border:1px solid var(--border);border-radius:8px;
+  padding:6px 12px;font-size:14px;color:var(--text);
+}
+.detail-title{flex:1;font-family:'Cinzel',serif;font-weight:700;font-size:16px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.detail-fav{
+  background:transparent;border:none;font-size:22px;color:var(--muted);padding:4px;
+}
+.detail-fav.on{color:var(--gold, var(--accent))}
+.detail-body{flex:1;overflow-y:auto;padding:14px 14px 30px;-webkit-overflow-scrolling:touch}
+
+.dc-name{font-family:'Cinzel',serif;font-size:22px;font-weight:700;color:var(--accent);margin-bottom:2px;line-height:1.2}
+.dc-sub{font-size:12px;color:var(--muted);font-style:italic;margin-bottom:14px}
+.dc-section{
+  background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:12px 14px;margin-bottom:10px;
+}
+.dc-section h4{
+  font-family:'Cinzel',serif;font-size:13px;font-weight:700;
+  color:var(--accent2);text-transform:uppercase;letter-spacing:1px;
+  margin-bottom:8px;padding-bottom:6px;
+  border-bottom:1px solid var(--border);
+}
+.dc-row{display:flex;justify-content:space-between;padding:4px 0;font-size:14px;gap:10px}
+.dc-row + .dc-row{border-top:1px dashed var(--border)}
+.dc-label{color:var(--muted);text-transform:uppercase;font-size:11px;letter-spacing:.5px;font-weight:600;flex-shrink:0}
+.dc-val{color:var(--text);text-align:right;font-weight:500}
+.dc-stats{
+  display:grid;grid-template-columns:repeat(6,1fr);gap:6px;
+}
+.dc-stat{
+  background:var(--bg3);border:1px solid var(--border);border-radius:8px;
+  padding:8px 4px;text-align:center;
+}
+.dc-stat-name{font-family:'Cinzel',serif;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase}
+.dc-stat-val{font-size:18px;font-weight:700;color:var(--text);margin-top:2px;font-family:'Cinzel',serif}
+.dc-stat-mod{font-size:11px;color:var(--muted);margin-top:1px}
+.dc-action{
+  padding:8px 0;border-top:1px solid var(--border);
+}
+.dc-action:first-of-type{border-top:none;padding-top:0}
+.dc-action-name{font-weight:700;color:var(--accent2);font-size:14px;margin-bottom:3px}
+.dc-action-desc{font-size:13px;line-height:1.5;color:var(--text)}
+.dc-action-desc p{margin-bottom:6px}
+.dc-action-desc p:last-child{margin-bottom:0}
+.dc-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.dc-tag{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:10px;padding:2px 8px;font-size:11px;color:var(--muted);
+}
+
+/* ── HERO BANNER ── */
+.dc-hero {
+  margin:-14px -14px 14px;
+  padding:24px 18px 20px;
+  border-bottom:1px solid var(--border);
+  position:relative;overflow:hidden;
+  background:var(--bg2);
+}
+.dc-hero::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 15% 0%, var(--hero-c, var(--accent)) 0%, transparent 55%);
+  opacity:.28;pointer-events:none;
+}
+.dc-hero::after{
+  content:'';position:absolute;left:0;right:0;bottom:-1px;height:2px;
+  background:linear-gradient(90deg, transparent, var(--hero-c, var(--accent)), transparent);
+}
+.dc-hero[data-type="monster"]{--hero-c:#e74c3c}
+.dc-hero[data-type="spell"]{--hero-c:#9b59b6}
+.dc-hero[data-type="equipment"]{--hero-c:#3498db}
+.dc-hero[data-type="magic-item"]{--hero-c:#f1c40f}
+.dc-hero[data-type="class"]{--hero-c:#1abc9c}
+.dc-hero[data-type="race"]{--hero-c:#e67e22}
+.dc-hero[data-type="condition"]{--hero-c:#c0392b}
+.dc-hero[data-type="feat"]{--hero-c:#27ae60}
+.dc-hero[data-type="weapon"]{--hero-c:#3498db}
+.dc-hero[data-type="armor"]{--hero-c:#5dade2}
+.dc-hero[data-type="background"]{--hero-c:#d4a574}
+.dc-hero[data-type="section"]{--hero-c:#95a5a6}
+.dc-hero-emoji{
+  font-size:42px;line-height:1;margin-bottom:10px;display:inline-block;
+  filter:drop-shadow(0 4px 14px rgba(0,0,0,.5));position:relative;
+}
+.dc-hero-name{
+  font-family:'Cinzel',serif;font-size:28px;font-weight:800;
+  letter-spacing:.5px;line-height:1.15;color:var(--text);
+  text-shadow:0 1px 0 rgba(0,0,0,.5);position:relative;
+}
+.dc-hero-sub{
+  font-size:11px;color:var(--muted);font-style:italic;
+  letter-spacing:1.5px;text-transform:uppercase;
+  margin-top:6px;position:relative;
+}
+
+/* ── DAMAGE HERO ── */
+.dmg-hero{
+  background:linear-gradient(135deg, var(--dmg-c, var(--danger)) 0%, color-mix(in srgb, var(--dmg-c, var(--danger)) 70%, #000) 100%);
+  border-radius:14px;padding:18px;margin-bottom:12px;
+  display:flex;align-items:center;gap:16px;
+  position:relative;overflow:hidden;
+  box-shadow:0 6px 20px -6px var(--dmg-c, var(--danger));
+}
+.dmg-hero::before{
+  content:'';position:absolute;right:-30px;top:-30px;
+  width:140px;height:140px;
+  background:radial-gradient(circle, rgba(255,255,255,.2), transparent 65%);
+  pointer-events:none;
+}
+.dmg-hero-icon{
+  font-size:36px;flex-shrink:0;
+  filter:drop-shadow(0 2px 6px rgba(0,0,0,.45));position:relative;
+}
+.dmg-hero-main{flex:1;position:relative;min-width:0}
+.dmg-hero-dice{
+  font-family:'Cinzel',serif;font-size:34px;font-weight:800;
+  color:#fff;line-height:1;letter-spacing:.5px;
+  text-shadow:0 2px 6px rgba(0,0,0,.45);
+}
+.dmg-hero-type{
+  font-size:11px;color:rgba(255,255,255,.92);
+  text-transform:uppercase;letter-spacing:3px;
+  margin-top:6px;font-weight:700;
+}
+.dmg-hero-label{
+  position:absolute;top:10px;right:14px;
+  font-size:9px;font-weight:800;letter-spacing:2.5px;
+  color:rgba(255,255,255,.55);text-transform:uppercase;
+}
+
+/* ── STAT TILES ── */
+.stat-tiles{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px;
+}
+.stat-tile{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:10px 12px;
+  display:flex;align-items:center;gap:10px;
+}
+.stat-tile-icon{
+  width:34px;height:34px;background:var(--bg3);
+  border:1px solid var(--border);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+}
+.stat-tile-main{min-width:0;flex:1}
+.stat-tile-label{
+  font-size:9px;text-transform:uppercase;letter-spacing:1.2px;
+  color:var(--muted);font-weight:700;
+}
+.stat-tile-val{
+  font-family:'Cinzel',serif;font-size:15px;font-weight:700;
+  color:var(--text);margin-top:2px;line-height:1.15;
+  word-break:break-word;
+}
+
+/* ── DAMAGE CHIP ── */
+.dmg-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--dmg-c, var(--danger));color:#fff;
+  padding:5px 11px;border-radius:12px;
+  font-weight:700;font-size:12px;letter-spacing:.3px;
+  box-shadow:0 2px 5px -1px rgba(0,0,0,.35);
+  margin:3px 4px 3px 0;
+}
+.dmg-chip-dice{font-family:'Cinzel',serif;font-size:13px}
+.dmg-chip-type{opacity:.92;text-transform:lowercase;font-weight:600;font-size:11px}
+
+/* ── PROPERTY PILLS ── */
+.prop-pills{display:flex;flex-wrap:wrap;gap:6px}
+.prop-pill{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:12px;padding:5px 11px;
+  font-size:12px;font-weight:600;color:var(--text);
+}
+
+/* ── ACTION ENHANCED ── */
+.dc-action-header{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px;flex-wrap:wrap;margin-bottom:5px;
+}
+.dc-action-attack{
+  background:var(--bg3);color:var(--accent2);
+  border:1px solid var(--border);
+  padding:3px 9px;border-radius:8px;
+  font-size:12px;font-weight:700;font-family:'Cinzel',serif;
+  white-space:nowrap;
+}
+.dc-action-chips{margin:4px 0 7px}
+
+/* ── DAMAGE BY LEVEL GRID ── */
+.dmg-level-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px;
+}
+.dmg-level-cell{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:8px;padding:9px 6px;text-align:center;
+}
+.dmg-level-cell .lbl{
+  font-size:10px;color:var(--muted);text-transform:uppercase;
+  letter-spacing:1px;font-weight:700;
+}
+.dmg-level-cell .val{
+  font-family:'Cinzel',serif;font-size:17px;font-weight:700;
+  margin-top:3px;
+}
+.dmg-level-cell .typ{font-size:10px;color:var(--muted);margin-top:1px;text-transform:lowercase}
+
+/* ── BADGE COLORS PER TYPE ── */
+.type-monster{color:#e74c3c}
+.type-spell{color:#9b59b6}
+.type-equipment{color:#3498db}
+.type-magic-item{color:#f1c40f}
+.type-class{color:#1abc9c}
+.type-race{color:#e67e22}
+.type-condition{color:#c0392b}
+.type-feat{color:#27ae60}
+.type-weapon{color:#3498db}
+.type-armor{color:#5dade2}
+.type-background{color:#d4a574}
+.type-section{color:#95a5a6}
+
+/* ── SOURCE BADGE ── */
+.source-badge{
+  text-align:center;font-size:10px;color:var(--muted);
+  margin:-8px 0 12px;letter-spacing:1.5px;text-transform:uppercase;
+}
+.source-badge::before{content:'⊛  '}
+.source-badge::after{content:'  ⊛'}
+.source-badge.homebrew{
+  color:var(--gold, #f1c40f);font-weight:700;
+}
+.source-badge.homebrew::before{content:'✦  '}
+.source-badge.homebrew::after{content:'  ✦'}
+
+/* ── FLOATING ACTION BUTTON ── */
+.fab{
+  position:fixed;right:18px;bottom:78px;z-index:50;
+  width:54px;height:54px;border-radius:50%;
+  background:linear-gradient(135deg, var(--accent2), var(--accent));
+  color:#000;border:none;
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;font-weight:700;
+  box-shadow:0 6px 18px -4px rgba(0,0,0,.5), 0 0 0 1px var(--border);
+  cursor:pointer;
+  transition:transform .12s, box-shadow .12s;
+}
+.fab:active{transform:scale(.94)}
+.fab.hidden{display:none}
+
+/* ── TYPE PICKER SHEET ── */
+.type-picker-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:8px;
+}
+.type-pick{
+  background:var(--card);border:1.5px solid var(--border);
+  border-radius:12px;padding:14px 10px;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  font-size:13px;font-weight:600;color:var(--text);
+  transition:border-color .12s, transform .08s;
+}
+.type-pick:active{transform:scale(.97)}
+.type-pick-icon{font-size:28px}
+
+/* ── FORM OVERLAY ── */
+.form-overlay{
+  position:fixed;inset:0;background:var(--bg);
+  display:none;flex-direction:column;z-index:120;
+}
+.form-overlay.open{display:flex}
+.form-bar{
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  padding:10px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0;
+  padding-top:max(10px, env(safe-area-inset-top));
+}
+.form-title{flex:1;font-family:'Cinzel',serif;font-weight:700;font-size:16px}
+.form-cancel,.form-save{
+  background:var(--bg3);border:1px solid var(--border);border-radius:8px;
+  padding:6px 12px;font-size:14px;color:var(--text);font-weight:600;
+}
+.form-save{
+  background:var(--accent);color:#000;border-color:var(--accent);
+}
+.form-body{flex:1;overflow-y:auto;padding:16px 14px 40px;-webkit-overflow-scrolling:touch}
+
+/* ── FORM FIELDS ── */
+.form-section{
+  font-family:'Cinzel',serif;font-size:12px;font-weight:700;
+  text-transform:uppercase;letter-spacing:2px;color:var(--accent2);
+  margin:18px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border);
+}
+.form-section:first-child{margin-top:0}
+.form-field{margin-bottom:10px}
+.form-field-row{display:grid;grid-template-columns:repeat(auto-fit, minmax(110px,1fr));gap:8px}
+.form-label{
+  display:block;font-size:11px;font-weight:600;letter-spacing:.8px;
+  text-transform:uppercase;color:var(--muted);margin-bottom:4px;
+}
+.form-label .req{color:var(--danger);margin-left:3px}
+.form-input,.form-select,.form-textarea{
+  width:100%;background:var(--card);border:1.5px solid var(--border);
+  border-radius:8px;padding:10px 12px;font-size:14px;color:var(--text);
+  outline:none;transition:border-color .12s;
+  font-family:'Inter',sans-serif;
+}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent)}
+.form-textarea{min-height:80px;resize:vertical;line-height:1.5}
+.form-select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='%239a8060' d='M6 8L0 0h12z'/></svg>");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+.form-check{
+  display:flex;align-items:center;gap:8px;padding:8px 12px;
+  background:var(--card);border:1.5px solid var(--border);border-radius:8px;
+  cursor:pointer;font-size:14px;color:var(--text);user-select:none;
+}
+.form-check input{margin:0;width:18px;height:18px;accent-color:var(--accent)}
+
+/* ── ACTIONS REPEATER ── */
+.actions-list{display:flex;flex-direction:column;gap:8px}
+.action-row{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:10px;
+  position:relative;
+}
+.action-row-head{
+  display:flex;align-items:center;gap:8px;margin-bottom:8px;
+}
+.action-row-num{
+  background:var(--bg3);border:1px solid var(--border);border-radius:50%;
+  width:24px;height:24px;display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;color:var(--muted);flex-shrink:0;
+}
+.action-row-remove{
+  margin-left:auto;background:transparent;border:none;
+  color:var(--danger);font-size:18px;padding:2px 6px;
+}
+.action-row .form-field{margin-bottom:6px}
+.action-row .form-field:last-child{margin-bottom:0}
+.action-add{
+  background:transparent;border:1.5px dashed var(--border);
+  color:var(--muted);border-radius:10px;padding:10px;
+  font-size:13px;font-weight:600;width:100%;
+  transition:border-color .12s, color .12s;
+}
+.action-add:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ── DETAIL EDIT/DELETE ── */
+.detail-edit,.detail-delete{
+  background:var(--bg3);border:1px solid var(--border);border-radius:8px;
+  padding:6px 10px;font-size:13px;color:var(--text);font-weight:600;
+}
+.detail-delete{color:var(--danger);border-color:var(--danger)}
+
+/* ── THEME SHEET ── */
+.sheet-backdrop{
+  position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;
+  display:none;
+}
+.sheet-backdrop.open{display:block}
+.sheet{
+  position:fixed;left:0;right:0;bottom:0;
+  background:var(--bg2);border-top:1px solid var(--border);
+  border-radius:16px 16px 0 0;
+  padding:16px 16px calc(20px + env(safe-area-inset-bottom));
+  z-index:201;
+  transform:translateY(100%);
+  transition:transform .25s ease;
+  display:none;
+}
+.sheet.open{display:block;transform:translateY(0)}
+.sheet h3{font-family:'Cinzel',serif;font-size:15px;margin-bottom:10px;color:var(--accent)}
+.theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.theme-opt{
+  background:var(--card);border:1.5px solid var(--border);border-radius:10px;
+  padding:10px;text-align:center;font-size:12px;font-weight:600;
+}
+.theme-opt.active{border-color:var(--accent);color:var(--accent)}
+.theme-swatch{
+  width:100%;height:24px;border-radius:6px;margin-bottom:6px;
+  background:linear-gradient(135deg,var(--sw1),var(--sw2));
+}
+
+@media (min-width:700px){
+  .dc-stats{grid-template-columns:repeat(6,1fr)}
+  body{max-width:600px;margin:0 auto;border-left:1px solid var(--border);border-right:1px solid var(--border)}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <div class="brand">Adventurer's Codex</div>
+    <div class="brand-sub">D&D 5e Lookup</div>
+  </div>
+  <button class="theme-btn" id="themeBtn" aria-label="Theme">&#9728;</button>
+</div>
+
+<div class="content">
+
+  <!-- SEARCH PANE -->
+  <div class="pane active" id="pane-search">
+    <div class="search-wrap">
+      <div class="search-row">
+        <span class="search-icon">&#128269;</span>
+        <input class="search" id="searchInput" placeholder="Search monsters, spells, items..." autocomplete="off" autocorrect="off" spellcheck="false">
+        <button class="search-clear" id="searchClear" aria-label="Clear">&times;</button>
+      </div>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div id="results"></div>
+  </div>
+
+  <!-- FAVORITES PANE -->
+  <div class="pane" id="pane-favorites">
+    <div class="search-wrap">
+      <div class="search-row">
+        <span class="search-icon">&#128269;</span>
+        <input class="search" id="favSearch" placeholder="Filter favorites..." autocomplete="off">
+      </div>
+    </div>
+    <div id="favList"></div>
+  </div>
+
+  <!-- HISTORY PANE -->
+  <div class="pane" id="pane-history">
+    <div id="historyList" style="padding-top:12px"></div>
+  </div>
+
+</div>
+
+<div class="bottom-nav">
+  <button class="nav-item active" data-pane="search">
+    <span class="nav-icon">&#128269;</span>
+    <span class="nav-label">Search</span>
+  </button>
+  <button class="nav-item" data-pane="favorites">
+    <span class="nav-icon">&#9733;</span>
+    <span class="nav-label">Favorites</span>
+  </button>
+  <button class="nav-item" data-pane="history">
+    <span class="nav-icon">&#128337;</span>
+    <span class="nav-label">History</span>
+  </button>
+</div>
+
+<button class="fab" id="fab" aria-label="Create homebrew">+</button>
+
+<!-- DETAIL OVERLAY -->
+<div class="detail" id="detail">
+  <div class="detail-bar">
+    <button class="detail-back" id="detailBack">&larr; Back</button>
+    <div class="detail-title" id="detailTitle"></div>
+    <button class="detail-edit" id="detailEdit" style="display:none">Edit</button>
+    <button class="detail-delete" id="detailDelete" style="display:none">Delete</button>
+    <button class="detail-fav" id="detailFav" aria-label="Favorite">&#9734;</button>
+  </div>
+  <div class="detail-body" id="detailBody"></div>
+</div>
+
+<!-- TYPE PICKER SHEET -->
+<div class="sheet" id="typePickerSheet">
+  <h3>Create Homebrew</h3>
+  <div class="type-picker-grid" id="typePickerGrid"></div>
+</div>
+
+<!-- FORM OVERLAY -->
+<div class="form-overlay" id="formOverlay">
+  <div class="form-bar">
+    <button class="form-cancel" id="formCancel">Cancel</button>
+    <div class="form-title" id="formTitle"></div>
+    <button class="form-save" id="formSave">Save</button>
+  </div>
+  <div class="form-body" id="formBody"></div>
+</div>
+
+<!-- THEME SHEET -->
+<div class="sheet-backdrop" id="sheetBackdrop"></div>
+<div class="sheet" id="themeSheet">
+  <h3>Choose Theme</h3>
+  <div class="theme-grid" id="themeGrid"></div>
+</div>
+
+<script>
+/* ── CONFIG ── */
+const API = 'https://api.open5e.com/v1';
+const CACHE_VERSION = 'v2';
+const LS = {
+  favs: `codex.favs`,
+  history: `codex.history`,
+  theme: `codex.theme`,
+};
+
+const TYPES = [
+  { key:'all', label:'All', icon:'★' },
+  { key:'monster',    label:'Monsters',    endpoint:'monsters',    icon:'🐉', singular:'Monster' },
+  { key:'spell',      label:'Spells',      endpoint:'spells',      icon:'✨', singular:'Spell' },
+  { key:'magic-item', label:'Magic Items', endpoint:'magicitems',  icon:'🌟', singular:'Magic Item' },
+  { key:'weapon',     label:'Weapons',     endpoint:'weapons',     icon:'⚔️', singular:'Weapon' },
+  { key:'armor',      label:'Armor',       endpoint:'armor',       icon:'🛡️', singular:'Armor' },
+  { key:'class',      label:'Classes',     endpoint:'classes',     icon:'🧙', singular:'Class' },
+  { key:'race',       label:'Races',       endpoint:'races',       icon:'🧝', singular:'Race' },
+  { key:'background', label:'Backgrounds', endpoint:'backgrounds', icon:'📜', singular:'Background' },
+  { key:'feat',       label:'Feats',       endpoint:'feats',       icon:'🎖️', singular:'Feat' },
+  { key:'condition',  label:'Conditions',  endpoint:'conditions',  icon:'☠️', singular:'Condition' },
+  { key:'section',    label:'Rules',       endpoint:'sections',    icon:'📖', singular:'Rule' },
+];
+const TYPE_BY_KEY = Object.fromEntries(TYPES.map(t=>[t.key,t]));
+
+const THEMES = [
+  {key:'tavern',  label:'Tavern',  sw1:'#c8820a', sw2:'#221a0e'},
+  {key:'arcane',  label:'Arcane',  sw1:'#7c4dff', sw2:'#0d0d1a'},
+  {key:'blood',   label:'Blood',   sw1:'#c01c1c', sw2:'#0e0808'},
+  {key:'frost',   label:'Frost',   sw1:'#00b4d8', sw2:'#080e14'},
+  {key:'forest',  label:'Forest',  sw1:'#4caf50', sw2:'#080e08'},
+];
+
+/* ── STATE ── */
+let state = {
+  index: [],          // all items: {type, key, name, data}
+  filter: 'all',
+  query: '',
+  favs: new Set(),
+  history: [],        // array of {type, key, name, ts}
+  loadedTypes: new Set(),
+  customs: [],        // user-created homebrew items
+};
+
+/* ── INDEXEDDB WRAPPER ── */
+const DB_NAME = 'codex';
+const DB_VERSION = 1;
+const STORE = 'kv';
+let _dbPromise;
+function openDB(){
+  if (_dbPromise) return _dbPromise;
+  return _dbPromise = new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = () => req.result.createObjectStore(STORE);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+async function idbGet(key){
+  try {
+    const db = await openDB();
+    return await new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readonly');
+      const req = tx.objectStore(STORE).get(key);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  } catch(e){ return null; }
+}
+async function idbSet(key, val){
+  try {
+    const db = await openDB();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readwrite');
+      tx.objectStore(STORE).put(val, key);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch(e){ console.warn('IDB write failed', e); }
+}
+
+/* ── PERSISTENCE ── */
+function loadLocalCached(){
+  try {
+    state.favs = new Set(JSON.parse(localStorage.getItem(LS.favs) || '[]'));
+    state.history = JSON.parse(localStorage.getItem(LS.history) || '[]');
+  } catch(e){ console.warn('cache load failed', e); }
+}
+function saveFavs(){ localStorage.setItem(LS.favs, JSON.stringify(Array.from(state.favs))); }
+function saveHistory(){ localStorage.setItem(LS.history, JSON.stringify(state.history)); }
+
+/* ── API ── */
+async function fetchJson(url){
+  const full = url.startsWith('http') ? url : `${API}${url.startsWith('/') ? url : '/' + url}`;
+  const res = await fetch(full);
+  if (!res.ok) throw new Error('Fetch failed: ' + full);
+  return res.json();
+}
+
+async function loadType(t){
+  const cacheKey = `${CACHE_VERSION}.${t.key}`;
+  let items = await idbGet(cacheKey);
+  if (!items){
+    const data = await fetchJson(`/${t.endpoint}/?limit=5000`);
+    items = (data.results || []).map(r => ({
+      type: t.key,
+      key: r.slug,
+      name: r.name,
+      data: r,
+    }));
+    await idbSet(cacheKey, items);
+  }
+  return items;
+}
+
+async function loadIndex(progressCb){
+  const wanted = TYPES.filter(t => t.endpoint);
+  let done = 0;
+  const collected = [];
+  for (const t of wanted){
+    if (state.loadedTypes.has(t.key)){
+      done++;
+      progressCb && progressCb(done, wanted.length, t.label);
+      continue;
+    }
+    try {
+      const items = await loadType(t);
+      collected.push(...items);
+      state.loadedTypes.add(t.key);
+    } catch(e){
+      console.warn('Failed to load', t.endpoint, e);
+    }
+    done++;
+    progressCb && progressCb(done, wanted.length, t.label);
+  }
+  if (collected.length){
+    const newTypeSet = new Set(collected.map(i=>i.type));
+    state.index = state.index.filter(i => !newTypeSet.has(i.type)).concat(collected);
+    state.index.sort((a,b) => a.name.localeCompare(b.name));
+  }
+}
+
+async function getDetail(item){
+  return item.data;
+}
+
+/* ── SEARCH ── */
+function filteredResults(){
+  const q = state.query.trim().toLowerCase();
+  let list = state.index;
+  if (state.filter !== 'all') list = list.filter(i => i.type === state.filter);
+  if (q) {
+    list = list.filter(i => i.name.toLowerCase().includes(q));
+    // rank: startsWith > includes
+    list.sort((a,b) => {
+      const an = a.name.toLowerCase(), bn = b.name.toLowerCase();
+      const as = an.startsWith(q) ? 0 : 1;
+      const bs = bn.startsWith(q) ? 0 : 1;
+      if (as !== bs) return as - bs;
+      return an.localeCompare(bn);
+    });
+  }
+  return list.slice(0, 200);
+}
+
+/* ── RENDER: LIST ── */
+function renderChips(){
+  const el = document.getElementById('chips');
+  el.innerHTML = '';
+  for (const t of TYPES){
+    const b = document.createElement('button');
+    b.className = 'chip' + (state.filter === t.key ? ' active' : '');
+    b.textContent = `${t.icon} ${t.label}`;
+    b.onclick = () => { state.filter = t.key; renderChips(); renderResults(); };
+    el.appendChild(b);
+  }
+}
+
+function favKey(item){ return `${item.type}:${item.key}`; }
+
+function renderResults(){
+  const el = document.getElementById('results');
+  if (!state.index.length){
+    el.innerHTML = `<div class="loading"><div class="spinner"></div><div class="progress-text">Loading codex...</div></div>`;
+    return;
+  }
+  const list = filteredResults();
+  if (!list.length){
+    el.innerHTML = `<div class="empty"><div class="empty-emoji">🔍</div>No results${state.query ? ` for "${escapeHtml(state.query)}"` : ''}.</div>`;
+    return;
+  }
+  el.innerHTML = `<div class="results">${list.map(itemCardHTML).join('')}</div>`;
+  attachCardHandlers(el, list);
+}
+
+function itemCardHTML(item){
+  const t = TYPE_BY_KEY[item.type];
+  const isFav = state.favs.has(favKey(item));
+  return `
+    <button class="result-card" data-key="${favKey(item)}">
+      <div class="result-icon">${t.icon}</div>
+      <div class="result-main">
+        <div class="result-name">${escapeHtml(item.name)}</div>
+        <div class="result-meta type-${item.type}">${t.singular}</div>
+      </div>
+      <span class="result-fav ${isFav ? 'on' : ''}" data-fav="${favKey(item)}">${isFav ? '★' : '☆'}</span>
+    </button>
+  `;
+}
+
+function attachCardHandlers(container, list){
+  const map = Object.fromEntries(list.map(i => [favKey(i), i]));
+  container.querySelectorAll('.result-card').forEach(btn => {
+    btn.onclick = (e) => {
+      const fav = e.target.closest('[data-fav]');
+      const key = btn.getAttribute('data-key');
+      const item = map[key];
+      if (fav){
+        e.stopPropagation();
+        toggleFav(item);
+        // re-render current pane
+        if (currentPane === 'search') renderResults();
+        if (currentPane === 'favorites') renderFavorites();
+        if (currentPane === 'history') renderHistory();
+        return;
+      }
+      openDetail(item);
+    };
+  });
+}
+
+/* ── FAVORITES ── */
+function toggleFav(item){
+  const k = favKey(item);
+  if (state.favs.has(k)) state.favs.delete(k);
+  else state.favs.add(k);
+  saveFavs();
+}
+
+function renderFavorites(){
+  const el = document.getElementById('favList');
+  const q = (document.getElementById('favSearch').value || '').trim().toLowerCase();
+  let list = state.index.filter(i => state.favs.has(favKey(i)));
+  if (q) list = list.filter(i => i.name.toLowerCase().includes(q));
+  if (!state.favs.size){
+    el.innerHTML = `<div class="empty"><div class="empty-emoji">☆</div>Tap the star on anything to favorite it.</div>`;
+    return;
+  }
+  if (!list.length){
+    el.innerHTML = `<div class="empty"><div class="empty-emoji">🔍</div>No favorites match.</div>`;
+    return;
+  }
+  list.sort((a,b) => a.name.localeCompare(b.name));
+  el.innerHTML = `<div class="results">${list.map(itemCardHTML).join('')}</div>`;
+  attachCardHandlers(el, list);
+}
+
+/* ── HISTORY ── */
+function pushHistory(item){
+  const k = favKey(item);
+  state.history = state.history.filter(h => favKey(h) !== k);
+  state.history.unshift({ type:item.type, key:item.key, name:item.name, url:item.url, ts:Date.now() });
+  if (state.history.length > 100) state.history.length = 100;
+  saveHistory();
+}
+
+function renderHistory(){
+  const el = document.getElementById('historyList');
+  if (!state.history.length){
+    el.innerHTML = `<div class="empty"><div class="empty-emoji">🕒</div>Recently viewed items appear here.</div>`;
+    return;
+  }
+  const items = state.history.map(h => ({...h}));
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:0 0 10px 4px">
+      <div style="font-family:'Cinzel',serif;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Recent</div>
+      <button id="clearHistory" class="theme-btn" style="font-size:12px;padding:6px 10px">Clear</button>
+    </div>
+    <div class="results">${items.map(itemCardHTML).join('')}</div>
+  `;
+  attachCardHandlers(el, items);
+  document.getElementById('clearHistory').onclick = () => {
+    if (confirm('Clear history?')){ state.history = []; saveHistory(); renderHistory(); }
+  };
+}
+
+/* ── DETAIL ── */
+let currentDetailItem = null;
+async function openDetail(item){
+  currentDetailItem = item;
+  const det = document.getElementById('detail');
+  document.getElementById('detailTitle').textContent = item.name;
+  updateDetailFav();
+  // Show/hide edit + delete based on whether this is a homebrew item
+  const isCustom = !!(item.data && item.data.__custom) || (FORM_SCHEMAS[item.type] && state.customs.some(c => c.key === item.key));
+  document.getElementById('detailEdit').style.display = isCustom ? '' : 'none';
+  document.getElementById('detailDelete').style.display = isCustom ? '' : 'none';
+  const body = document.getElementById('detailBody');
+  body.innerHTML = `<div class="loading"><div class="spinner"></div></div>`;
+  det.classList.add('open');
+  pushHistory(item);
+  try {
+    const d = await getDetail(item);
+    body.innerHTML = renderDetail(item, d);
+  } catch(e){
+    body.innerHTML = `<div class="empty">Failed to load. Check connection.<br><br><button class="theme-btn" onclick="openDetail(currentDetailItem)">Retry</button></div>`;
+  }
+}
+function closeDetail(){
+  document.getElementById('detail').classList.remove('open');
+  currentDetailItem = null;
+}
+function updateDetailFav(){
+  if (!currentDetailItem) return;
+  const btn = document.getElementById('detailFav');
+  const on = state.favs.has(favKey(currentDetailItem));
+  btn.classList.toggle('on', on);
+  btn.innerHTML = on ? '★' : '☆';
+}
+
+/* ── RENDER: DETAIL BY TYPE ── */
+function renderDetail(item, d){
+  switch(item.type){
+    case 'monster':    return renderMonster(d);
+    case 'spell':      return renderSpell(d);
+    case 'weapon':     return renderWeapon(d);
+    case 'armor':      return renderArmor(d);
+    case 'magic-item': return renderMagicItem(d);
+    case 'class':      return renderClass(d);
+    case 'race':       return renderRace(d);
+    case 'background': return renderBackground(d);
+    case 'condition':  return renderCondition(d);
+    case 'feat':       return renderFeat(d);
+    case 'section':    return renderSection(d);
+    default:           return renderGeneric(d);
+  }
+}
+function sourceBadge(d){
+  if (d && d.__custom) return `<div class="source-badge homebrew">Homebrew</div>`;
+  return d && d.document__title
+    ? `<div class="source-badge">${escapeHtml(d.document__title)}</div>`
+    : '';
+}
+function extractDamages(desc){
+  if (!desc) return [];
+  const out = [];
+  const seen = new Set();
+  const re = /\(?(\d+d\d+(?:\s*[+\-]\s*\d+)?)\)?\s+(acid|bludgeoning|cold|fire|force|lightning|necrotic|piercing|poison|psychic|radiant|slashing|thunder)\s+damage/gi;
+  let m;
+  while ((m = re.exec(desc)) !== null){
+    const dice = m[1].replace(/\s+/g,'');
+    const type = m[2].toLowerCase();
+    const key = `${dice}|${type}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push({dice, type});
+  }
+  return out;
+}
+
+function mod(score){
+  const m = Math.floor((score - 10) / 2);
+  return m >= 0 ? `+${m}` : `${m}`;
+}
+
+/* ── DAMAGE TYPE COLORS + ICONS ── */
+const DMG_COLORS = {
+  acid:'#7CB342', bludgeoning:'#8D6E63', cold:'#4FC3F7', fire:'#FF7043',
+  force:'#BA68C8', lightning:'#FFD54F', necrotic:'#7B1FA2', piercing:'#90A4AE',
+  poison:'#66BB6A', psychic:'#F06292', radiant:'#FFCA28', slashing:'#EF5350',
+  thunder:'#42A5F5'
+};
+const DMG_ICONS = {
+  acid:'🧪', bludgeoning:'🔨', cold:'❄️', fire:'🔥', force:'💫',
+  lightning:'⚡', necrotic:'💀', piercing:'🗡️', poison:'☠️',
+  psychic:'🧠', radiant:'✨', slashing:'⚔️', thunder:'💥'
+};
+function damageColorFor(t){
+  if (!t) return '#EF5350';
+  return DMG_COLORS[t.toLowerCase().replace(/\s+/g,'-')] || '#EF5350';
+}
+function damageIconFor(t){
+  if (!t) return '⚔️';
+  return DMG_ICONS[t.toLowerCase()] || '⚔️';
+}
+function damageChip(dice, typeName){
+  const c = damageColorFor(typeName);
+  return `<span class="dmg-chip" style="background:${c}"><span class="dmg-chip-dice">${escapeHtml(dice)}</span>${typeName ? `<span class="dmg-chip-type">${escapeHtml(typeName.toLowerCase())}</span>` : ''}</span>`;
+}
+function damageHero(dice, typeName, label){
+  if (!dice) return '';
+  const c = damageColorFor(typeName);
+  return `
+    <div class="dmg-hero" style="--dmg-c:${c}">
+      <div class="dmg-hero-label">${escapeHtml(label || 'Damage')}</div>
+      <div class="dmg-hero-icon">${damageIconFor(typeName)}</div>
+      <div class="dmg-hero-main">
+        <div class="dmg-hero-dice">${escapeHtml(dice)}</div>
+        ${typeName ? `<div class="dmg-hero-type">${escapeHtml(typeName)}</div>` : ''}
+      </div>
+    </div>`;
+}
+function heroBlock({emoji, name, sub, type}){
+  return `
+    <div class="dc-hero" data-type="${type || ''}">
+      ${emoji ? `<div class="dc-hero-emoji">${emoji}</div>` : ''}
+      <div class="dc-hero-name">${escapeHtml(name || '')}</div>
+      ${sub ? `<div class="dc-hero-sub">${escapeHtml(sub)}</div>` : ''}
+    </div>`;
+}
+function statTile(icon, label, val){
+  if (val == null || val === '' || val === '—') return '';
+  return `
+    <div class="stat-tile">
+      <div class="stat-tile-icon">${icon}</div>
+      <div class="stat-tile-main">
+        <div class="stat-tile-label">${escapeHtml(label)}</div>
+        <div class="stat-tile-val">${val}</div>
+      </div>
+    </div>`;
+}
+function tilesGrid(tiles){
+  const list = tiles.filter(Boolean);
+  if (!list.length) return '';
+  return `<div class="stat-tiles">${list.join('')}</div>`;
+}
+function propPills(items){
+  if (!items || !items.length) return '';
+  return `<div class="prop-pills">${items.map(i => `<span class="prop-pill">${escapeHtml(i)}</span>`).join('')}</div>`;
+}
+function pickWeaponEmoji(d){
+  const name = (d.name || '').toLowerCase();
+  if (/bow|crossbow/.test(name)) return '🏹';
+  if (/dagger|knife/.test(name)) return '🗡️';
+  if (/hammer|maul|mace|flail|club|morningstar/.test(name)) return '🔨';
+  if (/axe/.test(name)) return '🪓';
+  if (/staff|quarterstaff|spear|lance|pike|javelin|trident|halberd|glaive/.test(name)) return '🔱';
+  if (/whip/.test(name)) return '➰';
+  if (/sling|dart|net|blowgun/.test(name)) return '🎯';
+  return '⚔️';
+}
+function schoolEmoji(name){
+  return ({'Abjuration':'🛡️','Conjuration':'🌀','Divination':'🔮','Enchantment':'💗','Evocation':'💥','Illusion':'👁️','Necromancy':'💀','Transmutation':'🔄'})[name] || '✨';
+}
+function classEmoji(idx){
+  return ({barbarian:'🪓',bard:'🎵',cleric:'🙏',druid:'🌿',fighter:'⚔️',monk:'👊',paladin:'🛡️',ranger:'🏹',rogue:'🗡️',sorcerer:'⚡',warlock:'👹',wizard:'🧙'})[idx] || '🛡️';
+}
+
+function renderMonster(d){
+  const speed = d.speed && typeof d.speed === 'object'
+    ? Object.entries(d.speed).map(([k,v])=>`${k} ${v}`).join(', ')
+    : (d.speed || '—');
+
+  const typeSub = [d.size, d.type + (d.subtype ? ` (${d.subtype})` : ''), d.alignment].filter(Boolean).join(' — ');
+
+  let html = heroBlock({ emoji: '🐉', name: d.name, sub: typeSub, type: 'monster' });
+  html += sourceBadge(d);
+
+  html += tilesGrid([
+    statTile('🛡️','Armor Class', `${d.armor_class}${d.armor_desc ? ` <span style="color:var(--muted);font-size:12px">(${escapeHtml(d.armor_desc)})</span>` : ''}`),
+    statTile('❤️','Hit Points', `${d.hit_points}${d.hit_dice ? ` <span style="color:var(--muted);font-size:12px">(${escapeHtml(d.hit_dice)})</span>` : ''}`),
+    statTile('🏃','Speed', speed),
+    statTile('⚠️','Challenge', `CR ${d.challenge_rating}`),
+  ]);
+
+  html += `
+    <div class="dc-section">
+      <h4>Ability Scores</h4>
+      <div class="dc-stats">
+        ${['strength','dexterity','constitution','intelligence','wisdom','charisma'].map(s=>{
+          const score = d[s];
+          const save = d[`${s}_save`];
+          return `
+            <div class="dc-stat">
+              <div class="dc-stat-name">${s.slice(0,3).toUpperCase()}</div>
+              <div class="dc-stat-val">${score}</div>
+              <div class="dc-stat-mod">${mod(score)}${save != null ? ` <span style="color:var(--accent2);font-weight:700">sv ${save>=0?'+':''}${save}</span>` : ''}</div>
+            </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+
+  const skillsStr = d.skills && Object.keys(d.skills).length
+    ? Object.entries(d.skills).map(([k,v]) => `${k.replace(/_/g,' ')} ${v>=0?'+':''}${v}`).join(', ')
+    : '';
+
+  const defRows = [];
+  if (skillsStr) defRows.push(`<div class="dc-row"><span class="dc-label">Skills</span><span class="dc-val">${escapeHtml(skillsStr)}</span></div>`);
+  if (d.damage_vulnerabilities) defRows.push(`<div class="dc-row"><span class="dc-label">Vulnerable</span><span class="dc-val">${escapeHtml(d.damage_vulnerabilities)}</span></div>`);
+  if (d.damage_resistances) defRows.push(`<div class="dc-row"><span class="dc-label">Resistant</span><span class="dc-val">${escapeHtml(d.damage_resistances)}</span></div>`);
+  if (d.damage_immunities) defRows.push(`<div class="dc-row"><span class="dc-label">Immune</span><span class="dc-val">${escapeHtml(d.damage_immunities)}</span></div>`);
+  if (d.condition_immunities) defRows.push(`<div class="dc-row"><span class="dc-label">Cond. Immune</span><span class="dc-val">${escapeHtml(d.condition_immunities)}</span></div>`);
+  if (d.senses) defRows.push(`<div class="dc-row"><span class="dc-label">Senses</span><span class="dc-val">${escapeHtml(d.senses)}</span></div>`);
+  if (d.languages) defRows.push(`<div class="dc-row"><span class="dc-label">Languages</span><span class="dc-val">${escapeHtml(d.languages)}</span></div>`);
+  if (defRows.length) html += `<div class="dc-section">${defRows.join('')}</div>`;
+
+  const sect = (title, arr) => arr && arr.length
+    ? `<div class="dc-section"><h4>${title}</h4>${arr.map(a=>actionBlock(a)).join('')}</div>` : '';
+
+  html += sect('Special Abilities', d.special_abilities);
+  html += sect('Actions', d.actions);
+  html += sect('Bonus Actions', d.bonus_actions);
+  html += sect('Reactions', d.reactions);
+
+  if (d.legendary_actions && d.legendary_actions.length){
+    const intro = d.legendary_desc
+      ? `<div class="dc-action-desc" style="margin-bottom:10px;color:var(--muted);font-style:italic">${formatDesc(d.legendary_desc)}</div>`
+      : '';
+    html += `<div class="dc-section"><h4>Legendary Actions</h4>${intro}${d.legendary_actions.map(a=>actionBlock(a)).join('')}</div>`;
+  }
+
+  if (d.desc) html += `<div class="dc-section"><h4>Description</h4><div class="dc-action-desc">${formatDesc(d.desc)}</div></div>`;
+  return html;
+}
+
+function actionBlock(a){
+  let dmgs = extractDamages(a.desc || '');
+  if (!dmgs.length && a.damage_dice){
+    const dice = a.damage_dice + (a.damage_bonus ? `+${a.damage_bonus}` : '');
+    dmgs = [{dice, type: ''}];
+  }
+  const chips = dmgs.map(d => damageChip(d.dice, d.type)).join('');
+  const meta = a.attack_bonus != null ? `<div class="dc-action-attack">+${a.attack_bonus} to hit</div>` : '';
+  return `
+    <div class="dc-action">
+      <div class="dc-action-header">
+        <div class="dc-action-name">${escapeHtml(a.name)}</div>
+        ${meta}
+      </div>
+      ${chips ? `<div class="dc-action-chips">${chips}</div>` : ''}
+      <div class="dc-action-desc">${formatDesc(a.desc || '')}</div>
+    </div>`;
+}
+
+function renderSpell(d){
+  const components = (d.components || '') + (d.material ? ` (${d.material})` : '');
+  const lvl = d.level_int === 0 ? 'Cantrip' : (d.level || `Level ${d.level_int}`);
+  const sub = `${lvl}${d.school ? ' · ' + d.school : ''}${d.ritual === 'yes' ? ' · Ritual' : ''}${d.concentration === 'yes' ? ' · Concentration' : ''}`;
+
+  let html = heroBlock({ emoji: schoolEmoji(d.school), name: d.name, sub, type: 'spell' });
+  html += sourceBadge(d);
+
+  const dmgs = extractDamages(d.desc || '');
+  if (dmgs.length){
+    html += damageHero(dmgs[0].dice, dmgs[0].type, 'Damage');
+  }
+
+  html += tilesGrid([
+    statTile('⏱️','Casting Time', escapeHtml(d.casting_time || '—')),
+    statTile('🎯','Range', escapeHtml(d.range || '—')),
+    statTile('🧪','Components', escapeHtml(components || '—')),
+    statTile('⌛','Duration', escapeHtml(d.duration || '—')),
+  ]);
+
+  html += `<div class="dc-section"><h4>Description</h4><div class="dc-action-desc">${formatDesc(d.desc || '')}</div></div>`;
+
+  if (d.higher_level){
+    html += `<div class="dc-section"><h4>At Higher Levels</h4><div class="dc-action-desc">${formatDesc(d.higher_level)}</div></div>`;
+  }
+
+  if (d.dnd_class){
+    const classes = d.dnd_class.split(',').map(c => c.trim()).filter(Boolean);
+    if (classes.length) html += `<div class="dc-section"><h4>Available To</h4>${propPills(classes)}</div>`;
+  }
+  return html;
+}
+
+function renderWeapon(d){
+  const props = Array.isArray(d.properties) ? d.properties : [];
+  let html = heroBlock({
+    emoji: pickWeaponEmoji(d),
+    name: d.name,
+    sub: d.category ? d.category.replace(/_/g,' ').replace(/\b\w/g, c=>c.toUpperCase()) + ' Weapon' : 'Weapon',
+    type: 'weapon'
+  });
+  html += sourceBadge(d);
+
+  if (d.damage_dice) html += damageHero(d.damage_dice, d.damage_type || '', 'Damage');
+
+  html += tilesGrid([
+    d.cost ? statTile('💰','Cost', d.cost) : '',
+    d.weight ? statTile('⚖️','Weight', d.weight) : '',
+  ]);
+
+  if (props.length){
+    html += `<div class="dc-section"><h4>Properties</h4>${propPills(props)}</div>`;
+  }
+  return html;
+}
+
+function renderArmor(d){
+  let html = heroBlock({
+    emoji: '🛡️',
+    name: d.name,
+    sub: d.category ? d.category.replace(/_/g,' ').replace(/\b\w/g, c=>c.toUpperCase()) + ' Armor' : 'Armor',
+    type: 'armor'
+  });
+  html += sourceBadge(d);
+
+  html += tilesGrid([
+    statTile('🛡️','Armor Class', d.ac_string || (d.base_ac != null ? String(d.base_ac) : '—')),
+    d.strength_requirement ? statTile('💪','Str Required', d.strength_requirement) : '',
+    d.stealth_disadvantage ? statTile('🌑','Stealth', 'Disadvantage') : '',
+    d.cost ? statTile('💰','Cost', d.cost) : '',
+    d.weight ? statTile('⚖️','Weight', d.weight) : '',
+  ]);
+  return html;
+}
+
+function renderMagicItem(d){
+  const sub = [d.type, d.rarity].filter(Boolean).join(' — ');
+  let html = heroBlock({ emoji: '🌟', name: d.name, sub, type: 'magic-item' });
+  html += sourceBadge(d);
+
+  html += tilesGrid([
+    d.type ? statTile('📦','Type', d.type) : '',
+    d.rarity ? statTile('💎','Rarity', d.rarity) : '',
+    d.requires_attunement ? statTile('🔗','Attunement', d.requires_attunement) : '',
+  ]);
+
+  html += `<div class="dc-section"><h4>Description</h4><div class="dc-action-desc">${formatDesc(d.desc || '')}</div></div>`;
+  return html;
+}
+
+function renderClass(d){
+  let html = heroBlock({ emoji: classEmoji(d.slug), name: d.name, sub: 'Character Class', type: 'class' });
+  html += sourceBadge(d);
+
+  html += tilesGrid([
+    d.hit_dice ? statTile('🎲','Hit Dice', d.hit_dice) : '',
+    d.prof_saving_throws ? statTile('🛡️','Saving Throws', d.prof_saving_throws) : '',
+    d.spellcasting_ability ? statTile('✨','Spellcasting', d.spellcasting_ability) : '',
+    d.hp_at_1st_level ? statTile('❤️','HP at Lvl 1', d.hp_at_1st_level) : '',
+  ]);
+
+  if (d.prof_weapons)  html += `<div class="dc-section"><h4>Weapon Proficiencies</h4><div class="dc-action-desc">${escapeHtml(d.prof_weapons)}</div></div>`;
+  if (d.prof_armor)    html += `<div class="dc-section"><h4>Armor Proficiencies</h4><div class="dc-action-desc">${escapeHtml(d.prof_armor)}</div></div>`;
+  if (d.prof_tools)    html += `<div class="dc-section"><h4>Tool Proficiencies</h4><div class="dc-action-desc">${escapeHtml(d.prof_tools)}</div></div>`;
+  if (d.prof_skills)   html += `<div class="dc-section"><h4>Skill Proficiencies</h4><div class="dc-action-desc">${escapeHtml(d.prof_skills)}</div></div>`;
+  if (d.equipment)     html += `<div class="dc-section"><h4>Starting Equipment</h4><div class="dc-action-desc">${formatDesc(d.equipment)}</div></div>`;
+  if (d.archetypes && d.archetypes.length){
+    html += `<div class="dc-section"><h4>${escapeHtml(d.subtypes_name || 'Subclasses')}</h4>${propPills(d.archetypes.map(a=>a.name))}</div>`;
+  }
+  if (d.desc) html += `<div class="dc-section"><h4>Class Features</h4><div class="dc-action-desc">${formatDesc(d.desc)}</div></div>`;
+  return html;
+}
+
+function renderRace(d){
+  const speedStr = d.speed && typeof d.speed === 'object'
+    ? Object.entries(d.speed).map(([k,v]) => `${k} ${v}`).join(', ')
+    : (d.speed_desc || '—');
+
+  let html = heroBlock({ emoji: '🧝', name: d.name, sub: 'Player Race', type: 'race' });
+  html += sourceBadge(d);
+
+  html += tilesGrid([
+    statTile('🏃','Speed', speedStr),
+    statTile('📐','Size', d.size || '—'),
+    d.asi_desc ? statTile('💪','Ability Bonuses', d.asi_desc) : '',
+    d.vision ? statTile('👁️','Vision', d.vision) : '',
+  ]);
+
+  if (d.languages) html += `<div class="dc-section"><h4>Languages</h4><div class="dc-action-desc">${formatDesc(d.languages)}</div></div>`;
+  if (d.traits) html += `<div class="dc-section"><h4>Traits</h4><div class="dc-action-desc">${formatDesc(d.traits)}</div></div>`;
+  if (d.age) html += `<div class="dc-section"><h4>Age</h4><div class="dc-action-desc">${formatDesc(d.age)}</div></div>`;
+  if (d.alignment) html += `<div class="dc-section"><h4>Alignment</h4><div class="dc-action-desc">${formatDesc(d.alignment)}</div></div>`;
+  if (d.subraces && d.subraces.length){
+    html += `<div class="dc-section"><h4>Subraces</h4>${propPills(d.subraces.map(s=>s.name))}</div>`;
+  }
+  if (d.desc) html += `<div class="dc-section"><h4>Description</h4><div class="dc-action-desc">${formatDesc(d.desc)}</div></div>`;
+  return html;
+}
+
+function renderBackground(d){
+  let html = heroBlock({ emoji: '📜', name: d.name, sub: 'Background', type: 'background' });
+  html += sourceBadge(d);
+
+  html += tilesGrid([
+    d.skill_proficiencies ? statTile('🎯','Skills', d.skill_proficiencies) : '',
+    d.tool_proficiencies ? statTile('🔧','Tools', d.tool_proficiencies) : '',
+    d.languages ? statTile('💬','Languages', d.languages) : '',
+  ]);
+
+  if (d.equipment) html += `<div class="dc-section"><h4>Equipment</h4><div class="dc-action-desc">${formatDesc(d.equipment)}</div></div>`;
+  if (d.feature) html += `<div class="dc-section"><h4>Feature: ${escapeHtml(d.feature)}</h4><div class="dc-action-desc">${formatDesc(d.feature_desc || '')}</div></div>`;
+  if (d.desc) html += `<div class="dc-section"><h4>Description</h4><div class="dc-action-desc">${formatDesc(d.desc)}</div></div>`;
+  if (d.suggested_characteristics) html += `<div class="dc-section"><h4>Suggested Characteristics</h4><div class="dc-action-desc">${formatDesc(d.suggested_characteristics)}</div></div>`;
+  return html;
+}
+
+function renderSection(d){
+  let html = heroBlock({ emoji: '📖', name: d.name, sub: 'Rule' + (d.parent ? ` · ${d.parent}` : ''), type: 'section' });
+  html += sourceBadge(d);
+  html += `<div class="dc-section"><div class="dc-action-desc">${formatDesc(d.desc || '')}</div></div>`;
+  return html;
+}
+
+function renderCondition(d){
+  return `
+    ${heroBlock({ emoji: '☠️', name: d.name, sub: 'Condition', type: 'condition' })}
+    ${sourceBadge(d)}
+    <div class="dc-section">
+      <h4>Effect</h4>
+      <div class="dc-action-desc">${formatDesc(d.desc || '')}</div>
+    </div>`;
+}
+
+function renderFeat(d){
+  let html = heroBlock({ emoji: '🎖️', name: d.name, sub: 'Feat', type: 'feat' });
+  html += sourceBadge(d);
+  if (d.prerequisite){
+    html += `<div class="dc-section"><h4>Prerequisite</h4><div class="dc-action-desc">${escapeHtml(d.prerequisite)}</div></div>`;
+  }
+  if (d.desc) html += `<div class="dc-section"><h4>Description</h4><div class="dc-action-desc">${formatDesc(d.desc)}</div></div>`;
+  if (d.effects_desc){
+    const effects = Array.isArray(d.effects_desc) ? d.effects_desc.join('\n\n') : d.effects_desc;
+    if (effects) html += `<div class="dc-section"><h4>Effects</h4><div class="dc-action-desc">${formatDesc(effects)}</div></div>`;
+  }
+  return html;
+}
+
+function renderGeneric(d){
+  return `
+    <div class="dc-name">${escapeHtml(d.name || '')}</div>
+    <div class="dc-section">
+      <div class="dc-action-desc">${formatDesc(JSON.stringify(d, null, 2))}</div>
+    </div>
+  `;
+}
+
+/* ── HOMEBREW: SCHEMAS ── */
+const FORM_SCHEMAS = {
+  monster: {
+    title:'Monster', emoji:'🐉',
+    fields:[
+      {key:'name', label:'Name', type:'text', required:true, placeholder:'e.g. Owlbear King'},
+      {section:'Basic'},
+      {key:'size', label:'Size', type:'select', options:['Tiny','Small','Medium','Large','Huge','Gargantuan']},
+      {key:'type', label:'Type', type:'text', placeholder:'Beast, Aberration, Humanoid...'},
+      {key:'subtype', label:'Subtype', type:'text'},
+      {key:'alignment', label:'Alignment', type:'text', placeholder:'chaotic evil'},
+      {section:'Defenses'},
+      {key:'armor_class', label:'Armor Class', type:'number'},
+      {key:'armor_desc', label:'Armor Type', type:'text', placeholder:'natural armor, plate, etc.'},
+      {key:'hit_points', label:'Hit Points', type:'number'},
+      {key:'hit_dice', label:'Hit Dice', type:'text', placeholder:'5d8+10'},
+      {section:'Speed'},
+      {key:'speed_walk', label:'Walk (ft)', type:'number'},
+      {key:'speed_fly', label:'Fly (ft)', type:'number'},
+      {key:'speed_swim', label:'Swim (ft)', type:'number'},
+      {key:'speed_climb', label:'Climb (ft)', type:'number'},
+      {key:'speed_burrow', label:'Burrow (ft)', type:'number'},
+      {section:'Ability Scores'},
+      {key:'strength', label:'Strength', type:'number'},
+      {key:'dexterity', label:'Dexterity', type:'number'},
+      {key:'constitution', label:'Constitution', type:'number'},
+      {key:'intelligence', label:'Intelligence', type:'number'},
+      {key:'wisdom', label:'Wisdom', type:'number'},
+      {key:'charisma', label:'Charisma', type:'number'},
+      {section:'Saving Throws (optional)'},
+      {key:'strength_save', label:'Str Save', type:'number'},
+      {key:'dexterity_save', label:'Dex Save', type:'number'},
+      {key:'constitution_save', label:'Con Save', type:'number'},
+      {key:'intelligence_save', label:'Int Save', type:'number'},
+      {key:'wisdom_save', label:'Wis Save', type:'number'},
+      {key:'charisma_save', label:'Cha Save', type:'number'},
+      {section:'Misc'},
+      {key:'challenge_rating', label:'Challenge Rating', type:'text', placeholder:'1/4, 5, etc.'},
+      {key:'damage_vulnerabilities', label:'Vulnerabilities', type:'text'},
+      {key:'damage_resistances', label:'Resistances', type:'text'},
+      {key:'damage_immunities', label:'Damage Immunities', type:'text'},
+      {key:'condition_immunities', label:'Condition Immunities', type:'text'},
+      {key:'senses', label:'Senses', type:'text', placeholder:'darkvision 60 ft., passive Perception 14'},
+      {key:'languages', label:'Languages', type:'text'},
+      {key:'special_abilities', label:'Special Abilities', type:'actions', singular:'Ability'},
+      {key:'actions', label:'Actions', type:'actions', singular:'Action'},
+      {key:'reactions', label:'Reactions', type:'actions', singular:'Reaction'},
+      {key:'legendary_desc', label:'Legendary Action Intro', type:'textarea', placeholder:'How many legendary actions, what they cost...'},
+      {key:'legendary_actions', label:'Legendary Actions', type:'actions', singular:'Legendary Action'},
+      {section:'Description'},
+      {key:'desc', label:'Flavor / Description', type:'textarea'},
+    ],
+    build(v){
+      const speed = {};
+      ['walk','fly','swim','climb','burrow'].forEach(k=>{ if (v[`speed_${k}`]) speed[k] = Number(v[`speed_${k}`]); });
+      const obj = {
+        name:v.name, size:v.size, type:v.type, subtype:v.subtype, alignment:v.alignment,
+        armor_class: v.armor_class !== '' ? Number(v.armor_class) : null,
+        armor_desc:v.armor_desc,
+        hit_points: v.hit_points !== '' ? Number(v.hit_points) : null,
+        hit_dice:v.hit_dice, speed,
+        challenge_rating:v.challenge_rating,
+        damage_vulnerabilities:v.damage_vulnerabilities,
+        damage_resistances:v.damage_resistances,
+        damage_immunities:v.damage_immunities,
+        condition_immunities:v.condition_immunities,
+        senses:v.senses, languages:v.languages,
+        special_abilities:v.special_abilities||[],
+        actions:v.actions||[],
+        reactions:v.reactions||[],
+        legendary_desc:v.legendary_desc,
+        legendary_actions:v.legendary_actions||[],
+        desc:v.desc,
+      };
+      ['strength','dexterity','constitution','intelligence','wisdom','charisma'].forEach(s=>{
+        obj[s] = v[s] !== '' ? Number(v[s]) : 10;
+        obj[`${s}_save`] = (v[`${s}_save`] !== '' && v[`${s}_save`] != null) ? Number(v[`${s}_save`]) : null;
+      });
+      return obj;
+    },
+    toForm(d){
+      const v = {...d};
+      if (d.speed && typeof d.speed === 'object'){
+        Object.entries(d.speed).forEach(([k,val])=>{ v[`speed_${k}`] = val; });
+      }
+      return v;
+    }
+  },
+
+  spell:{
+    title:'Spell', emoji:'✨',
+    fields:[
+      {key:'name', label:'Name', type:'text', required:true},
+      {section:'Basic'},
+      {key:'level_int', label:'Level', type:'select', options:['0','1','2','3','4','5','6','7','8','9']},
+      {key:'school', label:'School', type:'select', options:['Abjuration','Conjuration','Divination','Enchantment','Evocation','Illusion','Necromancy','Transmutation']},
+      {section:'Mechanics'},
+      {key:'casting_time', label:'Casting Time', type:'text', placeholder:'1 action, 1 bonus action, 1 minute'},
+      {key:'range', label:'Range', type:'text', placeholder:'30 feet, Self, Touch'},
+      {key:'components', label:'Components', type:'text', placeholder:'V, S, M'},
+      {key:'material', label:'Material', type:'text'},
+      {key:'duration', label:'Duration', type:'text', placeholder:'Instantaneous, 1 minute'},
+      {key:'concentration', label:'Concentration', type:'checkbox'},
+      {key:'ritual', label:'Ritual', type:'checkbox'},
+      {key:'dnd_class', label:'Available To (classes)', type:'text', placeholder:'Wizard, Sorcerer'},
+      {section:'Description'},
+      {key:'desc', label:'Description', type:'textarea', required:true, placeholder:'Mention damage like "8d6 fire damage" so the chip lights up.'},
+      {key:'higher_level', label:'At Higher Levels', type:'textarea'},
+    ],
+    build(v){
+      const lvl = Number(v.level_int||0);
+      return {
+        name:v.name,
+        level: lvl === 0 ? 'Cantrip' : `${lvl}-level`,
+        level_int: lvl,
+        school:v.school,
+        casting_time:v.casting_time, range:v.range,
+        components:v.components, material:v.material,
+        duration:v.duration,
+        concentration: v.concentration ? 'yes' : 'no',
+        ritual: v.ritual ? 'yes' : 'no',
+        dnd_class:v.dnd_class, desc:v.desc, higher_level:v.higher_level,
+      };
+    },
+    toForm(d){
+      return {
+        ...d,
+        concentration: d.concentration === 'yes' || d.concentration === true,
+        ritual: d.ritual === 'yes' || d.ritual === true,
+        level_int: String(d.level_int != null ? d.level_int : 0),
+      };
+    }
+  },
+
+  weapon:{
+    title:'Weapon', emoji:'⚔️',
+    fields:[
+      {key:'name', label:'Name', type:'text', required:true},
+      {key:'category', label:'Category', type:'select', options:['Simple Melee','Simple Ranged','Martial Melee','Martial Ranged']},
+      {key:'damage_dice', label:'Damage Dice', type:'text', placeholder:'1d8'},
+      {key:'damage_type', label:'Damage Type', type:'select', options:['slashing','piercing','bludgeoning','acid','cold','fire','force','lightning','necrotic','poison','psychic','radiant','thunder']},
+      {key:'cost', label:'Cost', type:'text', placeholder:'5 gp'},
+      {key:'weight', label:'Weight', type:'text', placeholder:'2 lb'},
+      {key:'properties_text', label:'Properties', type:'text', placeholder:'Light, Thrown, Finesse (comma-separated)'},
+    ],
+    build(v){
+      return {
+        name:v.name,
+        category: v.category ? v.category.toLowerCase().replace(/\s+/g,'_') : '',
+        damage_dice:v.damage_dice, damage_type:v.damage_type,
+        cost:v.cost, weight:v.weight,
+        properties: v.properties_text ? v.properties_text.split(',').map(s=>s.trim()).filter(Boolean) : [],
+      };
+    },
+    toForm(d){
+      return {
+        ...d,
+        properties_text: Array.isArray(d.properties) ? d.properties.join(', ') : '',
+        category: d.category ? d.category.replace(/_/g,' ').replace(/\b\w/g, c=>c.toUpperCase()) : '',
+      };
+    }
+  },
+
+  armor:{
+    title:'Armor', emoji:'🛡️',
+    fields:[
+      {key:'name', label:'Name', type:'text', required:true},
+      {key:'category', label:'Category', type:'select', options:['Light','Medium','Heavy','Shield']},
+      {key:'ac_string', label:'Armor Class', type:'text', placeholder:'14 + Dex modifier (max 2)'},
+      {key:'strength_requirement', label:'Strength Required', type:'number'},
+      {key:'stealth_disadvantage', label:'Stealth Disadvantage', type:'checkbox'},
+      {key:'cost', label:'Cost', type:'text', placeholder:'50 gp'},
+      {key:'weight', label:'Weight', type:'text', placeholder:'20 lb'},
+    ],
+    build(v){
+      return {
+        name:v.name,
+        category: v.category ? v.category.toLowerCase() : '',
+        ac_string:v.ac_string,
+        strength_requirement: v.strength_requirement !== '' && v.strength_requirement != null ? Number(v.strength_requirement) : null,
+        stealth_disadvantage: !!v.stealth_disadvantage,
+        cost:v.cost, weight:v.weight,
+      };
+    },
+    toForm(d){
+      return {...d, category: d.category ? d.category.charAt(0).toUpperCase()+d.category.slice(1) : ''};
+    }
+  },
+
+  'magic-item':{
+    title:'Magic Item', emoji:'🌟',
+    fields:[
+      {key:'name', label:'Name', type:'text', required:true},
+      {key:'type', label:'Type', type:'text', placeholder:'Weapon, Wondrous Item, Ring, Potion...'},
+      {key:'rarity', label:'Rarity', type:'select', options:['Common','Uncommon','Rare','Very Rare','Legendary','Artifact']},
+      {key:'requires_attunement', label:'Requires Attunement', type:'text', placeholder:'yes (by a wizard) — leave blank if not'},
+      {key:'desc', label:'Description', type:'textarea', required:true},
+    ],
+    build(v){ return {...v}; }
+  },
+
+  background:{
+    title:'Background', emoji:'📜',
+    fields:[
+      {key:'name', label:'Name', type:'text', required:true},
+      {key:'skill_proficiencies', label:'Skill Proficiencies', type:'text', placeholder:'Insight, Religion'},
+      {key:'tool_proficiencies', label:'Tool Proficiencies', type:'text'},
+      {key:'languages', label:'Languages', type:'text'},
+      {key:'equipment', label:'Equipment', type:'textarea'},
+      {key:'feature', label:'Feature Name', type:'text', placeholder:'Shelter of the Faithful'},
+      {key:'feature_desc', label:'Feature Description', type:'textarea'},
+      {key:'desc', label:'Description', type:'textarea'},
+      {key:'suggested_characteristics', label:'Suggested Characteristics', type:'textarea'},
+    ],
+    build(v){ return {...v}; }
+  },
+
+  feat:{
+    title:'Feat', emoji:'🎖️',
+    fields:[
+      {key:'name', label:'Name', type:'text', required:true},
+      {key:'prerequisite', label:'Prerequisite', type:'text', placeholder:'Strength 13 (optional)'},
+      {key:'desc', label:'Description', type:'textarea', required:true},
+      {key:'effects_desc', label:'Effects', type:'textarea'},
+    ],
+    build(v){ return {...v}; }
+  },
+
+  condition:{
+    title:'Condition', emoji:'☠️',
+    fields:[
+      {key:'name', label:'Name', type:'text', required:true},
+      {key:'desc', label:'Effect', type:'textarea', required:true},
+    ],
+    build(v){ return {...v}; }
+  },
+};
+
+/* ── HOMEBREW: STORAGE ── */
+async function loadCustoms(){
+  const c = await idbGet('customs');
+  if (Array.isArray(c) && c.length){
+    state.customs = c;
+    state.index = state.index.concat(c);
+    state.index.sort((a,b) => a.name.localeCompare(b.name));
+  } else {
+    state.customs = [];
+  }
+}
+async function persistCustoms(){
+  await idbSet('customs', state.customs);
+}
+
+/* ── HOMEBREW: FORM RENDERING ── */
+let currentFormType = null;
+let currentEditSlug = null;
+
+function renderField(field, value){
+  if (field.section) return `<div class="form-section">${escapeHtml(field.section)}</div>`;
+  if (field.type === 'actions') return renderActionsField(field, Array.isArray(value) ? value : []);
+  if (field.type === 'checkbox'){
+    return `<label class="form-check"><input type="checkbox" data-key="${field.key}" ${value ? 'checked' : ''}> <span>${escapeHtml(field.label)}</span></label>`;
+  }
+  const labelHtml = `<label class="form-label">${escapeHtml(field.label)}${field.required ? '<span class="req">*</span>' : ''}</label>`;
+  if (field.type === 'select'){
+    return `
+      <div class="form-field">${labelHtml}
+        <select class="form-select" data-key="${field.key}">
+          <option value=""></option>
+          ${(field.options||[]).map(o => `<option value="${escapeHtml(o)}" ${String(value||'') === o ? 'selected' : ''}>${escapeHtml(o)}</option>`).join('')}
+        </select>
+      </div>`;
+  }
+  if (field.type === 'textarea'){
+    return `
+      <div class="form-field">${labelHtml}
+        <textarea class="form-textarea" data-key="${field.key}" placeholder="${escapeHtml(field.placeholder||'')}">${escapeHtml(value || '')}</textarea>
+      </div>`;
+  }
+  const t = field.type === 'number' ? 'number' : 'text';
+  const inputmode = field.type === 'number' ? ' inputmode="numeric"' : '';
+  return `
+    <div class="form-field">${labelHtml}
+      <input class="form-input" type="${t}"${inputmode} data-key="${field.key}"
+             value="${escapeHtml(value != null && value !== '' ? String(value) : '')}"
+             placeholder="${escapeHtml(field.placeholder||'')}">
+    </div>`;
+}
+
+function renderActionsField(field, items){
+  const rows = items.length
+    ? items.map((it,i) => renderActionRow(field.key, i, it)).join('')
+    : '';
+  return `
+    <div class="form-field" data-actions-field="${field.key}">
+      <div class="form-section" style="margin-top:6px">${escapeHtml(field.label)}</div>
+      <div class="actions-list" id="actions-${field.key}">${rows}</div>
+      <button type="button" class="action-add" data-add-action="${field.key}">+ Add ${escapeHtml(field.singular || 'entry')}</button>
+    </div>`;
+}
+
+function renderActionRow(fieldKey, index, action){
+  action = action || {};
+  return `
+    <div class="action-row" data-index="${index}">
+      <div class="action-row-head">
+        <div class="action-row-num">${index + 1}</div>
+        <button type="button" class="action-row-remove" data-remove-action="${fieldKey}">×</button>
+      </div>
+      <div class="form-field">
+        <input class="form-input" data-action-key="name" placeholder="Name (e.g. Bite, Multiattack)" value="${escapeHtml(action.name || '')}">
+      </div>
+      <div class="form-field form-field-row">
+        <input class="form-input" data-action-key="attack_bonus" inputmode="numeric" placeholder="Attack +" value="${action.attack_bonus != null && action.attack_bonus !== '' ? action.attack_bonus : ''}">
+        <input class="form-input" data-action-key="damage_dice" placeholder="Damage dice (1d8)" value="${escapeHtml(action.damage_dice || '')}">
+        <input class="form-input" data-action-key="damage_bonus" inputmode="numeric" placeholder="Dmg +" value="${action.damage_bonus != null && action.damage_bonus !== '' ? action.damage_bonus : ''}">
+      </div>
+      <div class="form-field">
+        <textarea class="form-textarea" data-action-key="desc" placeholder="Description — mention damage type (e.g. 'slashing damage') so chips color correctly">${escapeHtml(action.desc || '')}</textarea>
+      </div>
+    </div>`;
+}
+
+function collectForm(schema){
+  const obj = {};
+  document.querySelectorAll('#formBody [data-key]').forEach(el => {
+    const key = el.dataset.key;
+    if (el.type === 'checkbox') obj[key] = el.checked;
+    else obj[key] = el.value;
+  });
+  schema.fields.filter(f => f.type === 'actions').forEach(f => {
+    const list = document.getElementById(`actions-${f.key}`);
+    if (!list) return;
+    const rows = [];
+    list.querySelectorAll('.action-row').forEach(row => {
+      const a = {};
+      row.querySelectorAll('[data-action-key]').forEach(inp => {
+        const k = inp.dataset.actionKey;
+        const v = inp.value.trim();
+        if (!v) return;
+        if (k === 'attack_bonus' || k === 'damage_bonus') a[k] = Number(v);
+        else a[k] = v;
+      });
+      if (a.name || a.desc) rows.push(a);
+    });
+    obj[f.key] = rows;
+  });
+  return obj;
+}
+
+/* ── HOMEBREW: CREATE / EDIT / DELETE ── */
+function openTypePicker(){
+  const grid = document.getElementById('typePickerGrid');
+  grid.innerHTML = Object.entries(FORM_SCHEMAS).map(([key, s]) => `
+    <button class="type-pick" data-pick-type="${key}">
+      <div class="type-pick-icon">${s.emoji}</div>
+      <div>${escapeHtml(s.title)}</div>
+    </button>
+  `).join('');
+  grid.querySelectorAll('[data-pick-type]').forEach(b => {
+    b.onclick = () => {
+      closeTypePicker();
+      openForm(b.dataset.pickType);
+    };
+  });
+  document.getElementById('sheetBackdrop').classList.add('open');
+  document.getElementById('typePickerSheet').classList.add('open');
+}
+function closeTypePicker(){
+  document.getElementById('sheetBackdrop').classList.remove('open');
+  document.getElementById('typePickerSheet').classList.remove('open');
+}
+
+function openForm(type, existingItem){
+  if (!FORM_SCHEMAS[type]) return;
+  currentFormType = type;
+  currentEditSlug = existingItem ? existingItem.key : null;
+  const schema = FORM_SCHEMAS[type];
+  const values = existingItem
+    ? (schema.toForm ? schema.toForm(existingItem.data) : existingItem.data)
+    : {};
+  document.getElementById('formTitle').textContent = (existingItem ? 'Edit ' : 'New ') + schema.title;
+  document.getElementById('formBody').innerHTML = schema.fields.map(f => renderField(f, values[f.key])).join('');
+  document.getElementById('formOverlay').classList.add('open');
+  // Scroll to top on open
+  document.getElementById('formBody').scrollTop = 0;
+}
+
+function closeForm(){
+  document.getElementById('formOverlay').classList.remove('open');
+  currentFormType = null;
+  currentEditSlug = null;
+}
+
+async function saveCustomItem(){
+  if (!currentFormType) return;
+  const schema = FORM_SCHEMAS[currentFormType];
+  const raw = collectForm(schema);
+  if (!raw.name || !String(raw.name).trim()){
+    alert('Name is required.');
+    return;
+  }
+  const built = schema.build ? schema.build(raw) : raw;
+  built.__custom = true;
+
+  let item;
+  if (currentEditSlug){
+    item = state.customs.find(c => c.key === currentEditSlug);
+    if (item){
+      built.slug = currentEditSlug;
+      item.name = built.name;
+      item.data = built;
+    }
+    const idx = state.index.find(i => i.key === currentEditSlug);
+    if (idx){ idx.name = built.name; idx.data = built; }
+  } else {
+    const slug = `custom-${currentFormType}-${Date.now().toString(36)}`;
+    built.slug = slug;
+    item = { type: currentFormType, key: slug, name: built.name, data: built };
+    state.customs.push(item);
+    state.index.push(item);
+    state.favs.add(favKey(item));
+    saveFavs();
+  }
+  state.index.sort((a,b) => a.name.localeCompare(b.name));
+  await persistCustoms();
+  closeForm();
+  if (item) openDetail(item);
+  if (currentPane === 'favorites') renderFavorites();
+  if (currentPane === 'search') renderResults();
+}
+
+async function deleteCurrentCustom(){
+  if (!currentDetailItem || !currentDetailItem.data || !currentDetailItem.data.__custom) return;
+  if (!confirm(`Delete "${currentDetailItem.name}"? This can't be undone.`)) return;
+  const k = currentDetailItem.key;
+  state.customs = state.customs.filter(c => c.key !== k);
+  state.index = state.index.filter(i => i.key !== k);
+  state.favs.delete(favKey(currentDetailItem));
+  state.history = state.history.filter(h => `${h.type}:${h.key}` !== favKey(currentDetailItem));
+  saveFavs(); saveHistory();
+  await persistCustoms();
+  closeDetail();
+  if (currentPane === 'favorites') renderFavorites();
+  if (currentPane === 'search') renderResults();
+  if (currentPane === 'history') renderHistory();
+}
+
+/* ── HELPERS ── */
+function escapeHtml(s){
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function formatDesc(s){
+  if (!s) return '';
+  return escapeHtml(s).split(/\n\n+/).map(p => `<p>${p.replace(/\n/g,'<br>')}</p>`).join('');
+}
+
+/* ── NAV ── */
+let currentPane = 'search';
+function switchPane(name){
+  currentPane = name;
+  document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+  document.getElementById(`pane-${name}`).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.pane === name));
+  if (name === 'favorites') renderFavorites();
+  if (name === 'history') renderHistory();
+  // scroll content to top
+  document.querySelector('.content').scrollTop = 0;
+}
+
+/* ── THEME ── */
+function applyTheme(key){
+  document.documentElement.setAttribute('data-theme', key);
+  localStorage.setItem(LS.theme, key);
+}
+function renderThemeGrid(){
+  const cur = document.documentElement.getAttribute('data-theme');
+  const el = document.getElementById('themeGrid');
+  el.innerHTML = THEMES.map(t => `
+    <button class="theme-opt ${cur===t.key?'active':''}" data-theme="${t.key}">
+      <div class="theme-swatch" style="--sw1:${t.sw1};--sw2:${t.sw2}"></div>
+      ${t.label}
+    </button>
+  `).join('');
+  el.querySelectorAll('button').forEach(b => {
+    b.onclick = () => { applyTheme(b.dataset.theme); renderThemeGrid(); };
+  });
+}
+function openSheet(){
+  document.getElementById('sheetBackdrop').classList.add('open');
+  document.getElementById('themeSheet').classList.add('open');
+  renderThemeGrid();
+}
+function closeSheet(){
+  document.getElementById('sheetBackdrop').classList.remove('open');
+  document.getElementById('themeSheet').classList.remove('open');
+}
+
+/* ── INIT ── */
+function bindUI(){
+  const input = document.getElementById('searchInput');
+  const clear = document.getElementById('searchClear');
+  input.addEventListener('input', () => {
+    state.query = input.value;
+    clear.classList.toggle('visible', !!input.value);
+    renderResults();
+  });
+  clear.addEventListener('click', () => {
+    input.value = ''; state.query = ''; clear.classList.remove('visible');
+    renderResults(); input.focus();
+  });
+
+  document.getElementById('favSearch').addEventListener('input', renderFavorites);
+
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.addEventListener('click', () => switchPane(n.dataset.pane));
+  });
+
+  document.getElementById('detailBack').addEventListener('click', closeDetail);
+  document.getElementById('detailFav').addEventListener('click', () => {
+    if (!currentDetailItem) return;
+    toggleFav(currentDetailItem);
+    updateDetailFav();
+  });
+
+  document.getElementById('themeBtn').addEventListener('click', openSheet);
+  document.getElementById('sheetBackdrop').addEventListener('click', () => {
+    closeSheet();
+    closeTypePicker();
+  });
+
+  // Homebrew: FAB + form + edit + delete
+  document.getElementById('fab').addEventListener('click', openTypePicker);
+  document.getElementById('formCancel').addEventListener('click', () => {
+    if (confirm('Discard changes?')) closeForm();
+  });
+  document.getElementById('formSave').addEventListener('click', saveCustomItem);
+  document.getElementById('detailEdit').addEventListener('click', () => {
+    if (currentDetailItem) openForm(currentDetailItem.type, currentDetailItem);
+  });
+  document.getElementById('detailDelete').addEventListener('click', deleteCurrentCustom);
+
+  // Event delegation for action add/remove (inside form body)
+  document.getElementById('formBody').addEventListener('click', (e) => {
+    const addBtn = e.target.closest('[data-add-action]');
+    if (addBtn){
+      const k = addBtn.getAttribute('data-add-action');
+      const list = document.getElementById(`actions-${k}`);
+      const i = list.children.length;
+      list.insertAdjacentHTML('beforeend', renderActionRow(k, i, {}));
+      return;
+    }
+    const rmBtn = e.target.closest('[data-remove-action]');
+    if (rmBtn){
+      const k = rmBtn.getAttribute('data-remove-action');
+      const row = rmBtn.closest('.action-row');
+      row.remove();
+      const list = document.getElementById(`actions-${k}`);
+      list.querySelectorAll('.action-row').forEach((r,i) => {
+        r.querySelector('.action-row-num').textContent = i + 1;
+        r.dataset.index = i;
+      });
+    }
+  });
+
+  // back gesture on Android / Esc on desktop
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape'){
+      if (document.getElementById('formOverlay').classList.contains('open')) return; // require explicit cancel
+      if (document.getElementById('typePickerSheet').classList.contains('open')) return closeTypePicker();
+      if (document.getElementById('themeSheet').classList.contains('open')) return closeSheet();
+      if (document.getElementById('detail').classList.contains('open')) return closeDetail();
+    }
+  });
+}
+
+async function init(){
+  const savedTheme = localStorage.getItem(LS.theme);
+  if (savedTheme) applyTheme(savedTheme);
+
+  loadLocalCached();
+  bindUI();
+  renderChips();
+
+  const el = document.getElementById('results');
+  el.innerHTML = `<div class="loading"><div class="spinner"></div><div class="progress-text" id="progText">Opening the codex...</div></div>`;
+
+  await loadIndex((done, total, label) => {
+    const p = document.getElementById('progText');
+    if (p) p.textContent = `Loading ${label}... (${done}/${total})`;
+  });
+  await loadCustoms();
+  renderResults();
+}
+
+window.addEventListener('DOMContentLoaded', init);
+window.openDetail = openDetail; // for retry button
+</script>
+</body>
+</html>
