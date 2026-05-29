@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2d2215"/>
+      <stop offset="100%" stop-color="#0e0805"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f0b431"/>
+      <stop offset="50%" stop-color="#c8820a"/>
+      <stop offset="100%" stop-color="#7a5208"/>
+    </linearGradient>
+    <radialGradient id="vignette" cx="0.5" cy="0.4" r="0.7">
+      <stop offset="40%" stop-color="rgba(200,130,10,0.18)"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="100" fill="url(#bgGrad)"/>
+  <rect width="512" height="512" rx="100" fill="url(#vignette)"/>
+
+  <rect x="44" y="44" width="424" height="424" rx="80" fill="none" stroke="url(#goldGrad)" stroke-width="3" opacity="0.55"/>
+
+  <g opacity="0.22">
+    <line x1="128" y1="128" x2="384" y2="384" stroke="url(#goldGrad)" stroke-width="14" stroke-linecap="round"/>
+    <line x1="384" y1="128" x2="128" y2="384" stroke="url(#goldGrad)" stroke-width="14" stroke-linecap="round"/>
+  </g>
+
+  <text x="256" y="335" font-family="Georgia, 'Times New Roman', serif" font-size="290" font-weight="900" text-anchor="middle" fill="url(#goldGrad)" stroke="#5a3a08" stroke-width="3">A</text>
+
+  <text x="256" y="430" font-family="Georgia, serif" font-size="34" font-weight="700" text-anchor="middle" fill="#9a8060" letter-spacing="9">CODEX</text>
+</svg>

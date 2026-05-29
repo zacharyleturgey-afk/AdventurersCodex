@@ -5,7 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Codex">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#c8820a">
 <title>Adventurer's Codex</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="./icon.svg">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ── THEMES ── */
@@ -553,6 +559,193 @@ input,select,textarea{font-family:'Inter',sans-serif;color:inherit}
 }
 .detail-delete{color:var(--danger);border-color:var(--danger)}
 
+/* ── FIGHT TAB ── */
+.fight-empty{text-align:center;padding:30px 16px 18px}
+.fight-empty .icon{font-size:60px;margin-bottom:10px;filter:drop-shadow(0 4px 14px rgba(0,0,0,.4))}
+.fight-empty h2{font-family:'Cinzel',serif;font-size:24px;color:var(--accent);margin-bottom:6px;letter-spacing:1px}
+.fight-empty p{color:var(--muted);font-size:13px;margin-bottom:18px;line-height:1.5}
+
+.fight-header{
+  background:linear-gradient(135deg, var(--accent2), var(--accent));
+  border-radius:14px;padding:16px 18px;margin-bottom:12px;
+  position:relative;overflow:hidden;
+  box-shadow:0 6px 18px -6px var(--accent);
+}
+.fight-header::before{
+  content:'';position:absolute;right:-30px;top:-30px;
+  width:140px;height:140px;
+  background:radial-gradient(circle, rgba(255,255,255,.22), transparent 65%);
+  pointer-events:none;
+}
+.fight-round{
+  font-family:'Cinzel',serif;font-size:11px;font-weight:800;
+  color:rgba(0,0,0,.55);letter-spacing:3px;text-transform:uppercase;
+  position:relative;
+}
+.fight-active-name{
+  font-family:'Cinzel',serif;font-size:24px;font-weight:800;
+  color:#000;margin-top:3px;line-height:1.1;
+  text-shadow:0 1px 0 rgba(255,255,255,.25);position:relative;
+}
+.fight-active-label{
+  font-size:10px;color:rgba(0,0,0,.55);font-weight:800;
+  text-transform:uppercase;letter-spacing:2.5px;margin-top:4px;
+  position:relative;
+}
+
+/* Combatant list */
+.combatants-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.combatant{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;padding:10px 12px;
+  display:flex;align-items:center;gap:12px;
+  position:relative;
+  transition:transform .08s, background .15s;
+}
+.combatant.active{
+  background:linear-gradient(90deg, color-mix(in srgb, var(--accent) 22%, var(--card)) 0%, var(--card) 80%);
+  border-color:var(--accent);
+  box-shadow:0 0 0 1.5px var(--accent), 0 4px 14px -4px var(--accent);
+}
+.combatant.active::before{
+  content:'▶';position:absolute;left:-2px;top:50%;
+  transform:translate(-100%, -50%);
+  color:var(--accent);font-size:16px;
+}
+.combatant-init{
+  background:var(--bg3);border:1.5px solid var(--border);
+  border-radius:10px;
+  width:46px;height:46px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cinzel',serif;font-size:18px;font-weight:800;
+  color:var(--text);
+}
+.combatant.active .combatant-init{
+  background:var(--accent);border-color:var(--accent);color:#000;
+}
+.combatant-main{flex:1;min-width:0}
+.combatant-name{
+  font-family:'Cinzel',serif;font-weight:700;font-size:15px;
+  color:var(--text);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.combatant-pc-tag{
+  background:var(--accent);color:#000;
+  font-size:9px;font-weight:800;
+  padding:1px 6px;border-radius:6px;
+  margin-left:6px;letter-spacing:.5px;vertical-align:middle;
+  font-family:'Inter',sans-serif;
+}
+.combatant-hp{font-size:12px;color:var(--muted);margin-top:2px}
+.combatant-hp .hp-val{color:#ef5350;font-weight:700;font-family:'Cinzel',serif;font-size:13px}
+.combatant-actions{display:flex;gap:4px;flex-shrink:0}
+.combatant-btn{
+  background:var(--bg3);border:1px solid var(--border);border-radius:8px;
+  width:28px;height:28px;padding:0;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--text);font-size:14px;font-weight:700;
+}
+.combatant-btn.danger{color:var(--danger)}
+
+/* HP controls below combatant name */
+.hp-controls{
+  display:flex;gap:5px;align-items:center;margin-top:6px;
+}
+.hp-input{
+  width:54px;padding:5px 6px;font-size:13px;
+  background:var(--bg3);border:1px solid var(--border);border-radius:6px;
+  color:var(--text);text-align:center;
+  font-family:'Cinzel',serif;font-weight:700;outline:none;
+}
+.hp-input:focus{border-color:var(--accent)}
+.hp-btn{
+  padding:5px 10px;border-radius:6px;
+  font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:.5px;
+  background:var(--bg3);border:1px solid var(--border);
+}
+.hp-btn.heal{color:#66bb6a;border-color:#3a6f3e;background:rgba(102,187,106,.12)}
+.hp-btn.dmg{color:#ef5350;border-color:#6f3a3a;background:rgba(239,83,80,.12)}
+
+.combatant-name-link{
+  background:transparent;border:none;padding:0;
+  font-family:'Cinzel',serif;font-weight:700;font-size:15px;
+  color:var(--accent);text-decoration:underline;text-decoration-color:rgba(200,130,10,.4);
+  text-underline-offset:3px;text-align:left;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  max-width:100%;
+}
+.combatant-name-link:active{color:var(--accent2)}
+
+/* Add combatant form */
+.fight-add-form{
+  background:var(--card);border:1.5px dashed var(--border);
+  border-radius:12px;padding:12px;margin-bottom:12px;
+}
+.fight-add-row{
+  display:grid;grid-template-columns:1fr 56px 56px auto;
+  gap:6px;
+}
+.fight-add-row input{
+  font-size:14px;padding:8px 10px;
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:8px;color:var(--text);
+  font-family:'Inter',sans-serif;min-width:0;outline:none;
+}
+.fight-add-row input:focus{border-color:var(--accent)}
+.fight-add-row button{
+  background:var(--accent);color:#000;border:1px solid var(--accent);
+  border-radius:8px;font-weight:700;padding:8px 14px;
+  font-family:'Cinzel',serif;font-size:13px;letter-spacing:.5px;
+}
+.fight-add-meta{
+  display:flex;align-items:center;gap:6px;
+  margin-top:8px;font-size:12px;color:var(--muted);cursor:pointer;
+  user-select:none;
+}
+.fight-add-meta input{accent-color:var(--accent);width:16px;height:16px;margin:0}
+
+/* Codex autocomplete suggestions */
+.combatant-suggestions{
+  display:flex;flex-direction:column;gap:4px;
+  margin-bottom:10px;max-height:240px;overflow-y:auto;
+}
+.combatant-suggestions.hidden{display:none}
+.combatant-suggestion{
+  display:flex;align-items:center;gap:8px;
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:8px;padding:7px 10px;
+  font-size:13px;text-align:left;width:100%;
+  color:var(--text);
+  transition:border-color .12s;
+}
+.combatant-suggestion:active{border-color:var(--accent)}
+.combatant-suggestion-icon{font-size:16px;flex-shrink:0}
+.combatant-suggestion-main{flex:1;min-width:0}
+.combatant-suggestion-name{
+  font-family:'Cinzel',serif;font-weight:700;font-size:13px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.combatant-suggestion-meta{
+  font-size:10px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.5px;margin-top:1px;
+}
+
+/* Fight control buttons */
+.fight-controls{display:flex;gap:8px;margin-top:8px}
+.fight-btn{
+  flex:1;background:var(--card);border:1.5px solid var(--border);
+  border-radius:12px;padding:13px;
+  font-weight:700;font-size:14px;color:var(--text);
+  font-family:'Cinzel',serif;letter-spacing:1px;
+  transition:transform .08s;
+}
+.fight-btn:active{transform:scale(.985)}
+.fight-btn.primary{
+  background:linear-gradient(135deg, var(--accent2), var(--accent));
+  color:#000;border-color:var(--accent);
+}
+.fight-btn.danger{color:var(--danger);border-color:var(--danger)}
+
 /* ── THEME SHEET ── */
 .sheet-backdrop{
   position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;
@@ -629,12 +822,21 @@ input,select,textarea{font-family:'Inter',sans-serif;color:inherit}
     <div id="historyList" style="padding-top:12px"></div>
   </div>
 
+  <!-- FIGHT PANE -->
+  <div class="pane" id="pane-fight">
+    <div id="fightContent" style="padding-top:12px"></div>
+  </div>
+
 </div>
 
 <div class="bottom-nav">
   <button class="nav-item active" data-pane="search">
     <span class="nav-icon">&#128269;</span>
     <span class="nav-label">Search</span>
+  </button>
+  <button class="nav-item" data-pane="fight">
+    <span class="nav-icon">&#9876;&#65039;</span>
+    <span class="nav-label">Fight</span>
   </button>
   <button class="nav-item" data-pane="favorites">
     <span class="nav-icon">&#9733;</span>
@@ -691,6 +893,7 @@ const LS = {
   favs: `codex.favs`,
   history: `codex.history`,
   theme: `codex.theme`,
+  fight: `codex.fight`,
 };
 
 const TYPES = [
@@ -726,6 +929,7 @@ let state = {
   history: [],        // array of {type, key, name, ts}
   loadedTypes: new Set(),
   customs: [],        // user-created homebrew items
+  fight: { round: 1, turnIndex: 0, combatants: [] },
 };
 
 /* ── INDEXEDDB WRAPPER ── */
@@ -770,10 +974,13 @@ function loadLocalCached(){
   try {
     state.favs = new Set(JSON.parse(localStorage.getItem(LS.favs) || '[]'));
     state.history = JSON.parse(localStorage.getItem(LS.history) || '[]');
+    const f = JSON.parse(localStorage.getItem(LS.fight) || 'null');
+    if (f && Array.isArray(f.combatants)) state.fight = f;
   } catch(e){ console.warn('cache load failed', e); }
 }
 function saveFavs(){ localStorage.setItem(LS.favs, JSON.stringify(Array.from(state.favs))); }
 function saveHistory(){ localStorage.setItem(LS.history, JSON.stringify(state.history)); }
+function saveFight(){ localStorage.setItem(LS.fight, JSON.stringify(state.fight)); }
 
 /* ── API ── */
 async function fetchJson(url){
@@ -1872,6 +2079,319 @@ function formatDesc(s){
   return escapeHtml(s).split(/\n\n+/).map(p => `<p>${p.replace(/\n/g,'<br>')}</p>`).join('');
 }
 
+/* ── FIGHT TRACKER ── */
+function renderFight(){
+  const el = document.getElementById('fightContent');
+  const f = state.fight;
+
+  if (!f.combatants.length){
+    el.innerHTML = `
+      <div class="fight-empty">
+        <div class="icon">⚔️</div>
+        <h2>Let's Fight!</h2>
+        <p>Track turn order in combat.<br>Add your first combatant to start.</p>
+      </div>
+      ${addCombatantFormHTML()}
+    `;
+    wireFightAdd();
+    return;
+  }
+
+  const active = f.combatants[f.turnIndex] || f.combatants[0];
+  el.innerHTML = `
+    <div class="fight-header">
+      <div class="fight-round">Round ${f.round}</div>
+      <div class="fight-active-name">${escapeHtml(active.name)}</div>
+      <div class="fight-active-label">Now Acting</div>
+    </div>
+    <div class="combatants-list">
+      ${f.combatants.map((c,i) => combatantHTML(c, i === f.turnIndex)).join('')}
+    </div>
+    ${addCombatantFormHTML()}
+    <div class="fight-controls">
+      <button class="fight-btn primary" id="nextTurnBtn">▶ Next Turn</button>
+    </div>
+    <div class="fight-controls" style="margin-top:6px">
+      <button class="fight-btn danger" id="finishFightBtn">Finish Fight</button>
+    </div>
+  `;
+  wireFightAdd();
+  document.getElementById('nextTurnBtn').onclick = nextTurn;
+  document.getElementById('finishFightBtn').onclick = finishFight;
+  el.querySelectorAll('[data-rm-combatant]').forEach(b => {
+    b.onclick = (e) => { e.stopPropagation(); removeCombatant(b.dataset.rmCombatant); };
+  });
+  el.querySelectorAll('[data-hp-apply]').forEach(b => {
+    b.onclick = (e) => {
+      e.stopPropagation();
+      const [id, action] = b.dataset.hpApply.split('|');
+      const input = el.querySelector(`[data-hp-input="${id}"]`);
+      const n = parseInt(input.value, 10);
+      if (!n || n <= 0){ input.focus(); return; }
+      adjustHp(id, action === 'heal' ? n : -n);
+    };
+  });
+  el.querySelectorAll('.hp-input').forEach(inp => {
+    inp.addEventListener('click', e => e.stopPropagation());
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter'){
+        e.preventDefault();
+        const id = inp.dataset.hpInput;
+        const n = parseInt(inp.value, 10);
+        if (n) adjustHp(id, -n); // Enter = damage by default
+      }
+    });
+  });
+  el.querySelectorAll('[data-open-source]').forEach(b => {
+    b.onclick = (e) => {
+      e.stopPropagation();
+      const [type, key] = b.dataset.openSource.split('|');
+      const item = state.index.find(i => i.type === type && i.key === key);
+      if (item) openDetail(item);
+    };
+  });
+  el.querySelectorAll('[data-set-active]').forEach(b => {
+    b.onclick = (e) => {
+      // Don't trigger when clicking interactive children
+      if (e.target.closest('[data-hp-apply], [data-hp-input], [data-open-source], [data-rm-combatant], .hp-input')) return;
+      setActiveCombatant(b.dataset.setActive);
+    };
+  });
+}
+
+function combatantHTML(c, isActive){
+  const pcTag = c.isPlayer ? `<span class="combatant-pc-tag">PC</span>` : '';
+  const hasLink = !!(c.sourceType && c.sourceKey);
+  const nameHtml = hasLink
+    ? `<button class="combatant-name-link" data-open-source="${c.sourceType}|${c.sourceKey}">${escapeHtml(c.name)}</button>${pcTag}`
+    : `<div class="combatant-name">${escapeHtml(c.name)}${pcTag}</div>`;
+  const hpHtml = c.hp != null ? `
+    <div class="combatant-hp">HP <span class="hp-val">${c.hp}${c.maxHp ? `/${c.maxHp}` : ''}</span></div>
+    <div class="hp-controls">
+      <input type="number" class="hp-input" data-hp-input="${c.id}" placeholder="0" inputmode="numeric">
+      <button class="hp-btn dmg" data-hp-apply="${c.id}|damage">− DMG</button>
+      <button class="hp-btn heal" data-hp-apply="${c.id}|heal">+ HEAL</button>
+    </div>
+  ` : '';
+  return `
+    <div class="combatant ${isActive ? 'active' : ''}" data-set-active="${c.id}">
+      <div class="combatant-init">${c.initiative}</div>
+      <div class="combatant-main">
+        ${nameHtml}
+        ${hpHtml}
+      </div>
+      <div class="combatant-actions">
+        <button class="combatant-btn danger" data-rm-combatant="${c.id}" title="Remove">×</button>
+      </div>
+    </div>
+  `;
+}
+
+function addCombatantFormHTML(){
+  return `
+    <div class="fight-add-form">
+      <div class="combatant-suggestions hidden" id="combatantSuggestions"></div>
+      <div class="fight-add-row">
+        <input type="text" id="combatantName" placeholder="Name (try a creature...)" autocomplete="off" autocorrect="off" spellcheck="false">
+        <input type="number" id="combatantInit" placeholder="Init" inputmode="numeric">
+        <input type="number" id="combatantHp" placeholder="HP" inputmode="numeric">
+        <button id="addCombatantBtn">Add</button>
+      </div>
+      <label class="fight-add-meta">
+        <input type="checkbox" id="combatantPlayer">
+        <span>Player character</span>
+      </label>
+    </div>
+  `;
+}
+
+let pendingSource = null; // {type, key} when user picks from codex
+
+function wireFightAdd(){
+  const btn = document.getElementById('addCombatantBtn');
+  if (!btn) return;
+  const nameEl = document.getElementById('combatantName');
+  const initEl = document.getElementById('combatantInit');
+  const hpEl = document.getElementById('combatantHp');
+  const pcEl = document.getElementById('combatantPlayer');
+  const sugg = document.getElementById('combatantSuggestions');
+  pendingSource = null;
+
+  const submit = () => {
+    const name = nameEl.value.trim();
+    const init = initEl.value;
+    if (!name || init === ''){ nameEl.focus(); return; }
+    addCombatant({
+      name,
+      initiative: Number(init),
+      hp: hpEl.value,
+      isPlayer: pcEl.checked,
+      sourceType: pendingSource ? pendingSource.type : null,
+      sourceKey: pendingSource ? pendingSource.key : null,
+    });
+    nameEl.value = ''; initEl.value = ''; hpEl.value = ''; pcEl.checked = false;
+    pendingSource = null;
+    sugg.classList.add('hidden');
+    sugg.innerHTML = '';
+    nameEl.focus();
+  };
+  btn.onclick = submit;
+  [initEl, hpEl].forEach(el => {
+    el.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
+  });
+  nameEl.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
+
+  nameEl.addEventListener('input', () => {
+    pendingSource = null;
+    updateCombatantSuggestions();
+  });
+  nameEl.addEventListener('focus', updateCombatantSuggestions);
+}
+
+function updateCombatantSuggestions(){
+  const nameEl = document.getElementById('combatantName');
+  const sugg = document.getElementById('combatantSuggestions');
+  if (!nameEl || !sugg) return;
+  const q = nameEl.value.trim().toLowerCase();
+  if (!q || q.length < 2){
+    sugg.classList.add('hidden');
+    sugg.innerHTML = '';
+    return;
+  }
+  // Prefer creature-like types but include everything searchable
+  const matches = state.index
+    .filter(i => i.name.toLowerCase().includes(q))
+    .sort((a,b) => {
+      const an = a.name.toLowerCase(), bn = b.name.toLowerCase();
+      const ap = an.startsWith(q) ? 0 : 1;
+      const bp = bn.startsWith(q) ? 0 : 1;
+      if (ap !== bp) return ap - bp;
+      // Prefer monsters then anything else
+      const at = a.type === 'monster' ? 0 : 1;
+      const bt = b.type === 'monster' ? 0 : 1;
+      if (at !== bt) return at - bt;
+      return an.localeCompare(bn);
+    })
+    .slice(0, 8);
+  if (!matches.length){
+    sugg.classList.add('hidden');
+    sugg.innerHTML = '';
+    return;
+  }
+  sugg.classList.remove('hidden');
+  sugg.innerHTML = matches.map(it => {
+    const t = TYPE_BY_KEY[it.type];
+    const hp = it.data && it.data.hit_points;
+    const cr = it.data && it.data.challenge_rating;
+    const meta = [t.singular, hp ? `${hp} HP` : '', cr ? `CR ${cr}` : ''].filter(Boolean).join(' · ');
+    return `
+      <button class="combatant-suggestion" data-suggestion="${it.type}|${it.key}">
+        <span class="combatant-suggestion-icon">${t.icon}</span>
+        <span class="combatant-suggestion-main">
+          <div class="combatant-suggestion-name">${escapeHtml(it.name)}</div>
+          <div class="combatant-suggestion-meta">${escapeHtml(meta)}</div>
+        </span>
+      </button>
+    `;
+  }).join('');
+  sugg.querySelectorAll('[data-suggestion]').forEach(b => {
+    b.onclick = () => {
+      const [type, key] = b.dataset.suggestion.split('|');
+      const it = state.index.find(i => i.type === type && i.key === key);
+      if (!it) return;
+      const nameEl = document.getElementById('combatantName');
+      const hpEl = document.getElementById('combatantHp');
+      nameEl.value = it.name;
+      if (it.data && it.data.hit_points && !hpEl.value) hpEl.value = it.data.hit_points;
+      pendingSource = { type, key };
+      sugg.classList.add('hidden');
+      document.getElementById('combatantInit').focus();
+    };
+  });
+}
+
+function addCombatant({name, initiative, hp, isPlayer, sourceType, sourceKey}){
+  const f = state.fight;
+  const hpNum = hp !== '' && hp != null ? Number(hp) : null;
+  const c = {
+    id: 'c-' + Date.now().toString(36) + Math.random().toString(36).slice(2,5),
+    name,
+    initiative: Number(initiative) || 0,
+    hp: hpNum,
+    maxHp: hpNum,
+    isPlayer: !!isPlayer,
+    sourceType: sourceType || null,
+    sourceKey: sourceKey || null,
+  };
+  const activeId = f.combatants[f.turnIndex] && f.combatants[f.turnIndex].id;
+  f.combatants.push(c);
+  f.combatants.sort((a,b) => b.initiative - a.initiative);
+  if (activeId){
+    const idx = f.combatants.findIndex(x => x.id === activeId);
+    if (idx >= 0) f.turnIndex = idx;
+  }
+  saveFight();
+  renderFight();
+}
+
+function removeCombatant(id){
+  const f = state.fight;
+  const idx = f.combatants.findIndex(c => c.id === id);
+  if (idx < 0) return;
+  const wasActive = idx === f.turnIndex;
+  f.combatants.splice(idx, 1);
+  if (!f.combatants.length){
+    f.turnIndex = 0;
+    saveFight();
+    renderFight();
+    return;
+  }
+  if (idx < f.turnIndex) f.turnIndex--;
+  else if (wasActive && f.turnIndex >= f.combatants.length){
+    f.turnIndex = 0;
+    f.round++;
+  }
+  saveFight();
+  renderFight();
+}
+
+function nextTurn(){
+  const f = state.fight;
+  if (!f.combatants.length) return;
+  f.turnIndex++;
+  if (f.turnIndex >= f.combatants.length){
+    f.turnIndex = 0;
+    f.round++;
+  }
+  saveFight();
+  renderFight();
+}
+
+function setActiveCombatant(id){
+  const f = state.fight;
+  const idx = f.combatants.findIndex(c => c.id === id);
+  if (idx < 0 || idx === f.turnIndex) return;
+  f.turnIndex = idx;
+  saveFight();
+  renderFight();
+}
+
+function adjustHp(id, delta){
+  const c = state.fight.combatants.find(c => c.id === id);
+  if (!c || c.hp == null) return;
+  c.hp = Math.max(0, c.hp + delta);
+  if (c.maxHp != null && c.hp > c.maxHp) c.hp = c.maxHp;
+  saveFight();
+  renderFight();
+}
+
+function finishFight(){
+  if (!confirm('End the fight? All combatants will be cleared.')) return;
+  state.fight = { round: 1, turnIndex: 0, combatants: [] };
+  saveFight();
+  renderFight();
+}
+
 /* ── NAV ── */
 let currentPane = 'search';
 function switchPane(name){
@@ -1881,6 +2401,9 @@ function switchPane(name){
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.pane === name));
   if (name === 'favorites') renderFavorites();
   if (name === 'history') renderHistory();
+  if (name === 'fight') renderFight();
+  // Hide the homebrew FAB on the fight tab (it has its own inline add form)
+  document.getElementById('fab').classList.toggle('hidden', name === 'fight');
   // scroll content to top
   document.querySelector('.content').scrollTop = 0;
 }
